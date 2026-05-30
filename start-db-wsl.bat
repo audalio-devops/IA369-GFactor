@@ -1,0 +1,6 @@
+@echo off
+echo [WSL2] Iniciando PostgreSQL via Docker no Ubuntu...
+wsl bash -c "cd /mnt/c/Projetos/IA369-GFactor && docker compose up -d"
+echo [WSL2] Container iniciado. Verificando status...
+wsl docker ps
+pause

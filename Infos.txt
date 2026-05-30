@@ -1,0 +1,16 @@
+INICIAR O SISTEMA
+
+0 - Iniciar o Docker no Ubuntu
+logar com o usuario devops
+> docker ps
+
+1 - Iniciar o banco de dados
+.\start-db-wsl.bat
+
+2 - Iniciar o backend
+cd .\backend\
+mvn spring-boot:run
+
+3 - Iniciar o frontend
+cd .\frontend\
+npm run dev

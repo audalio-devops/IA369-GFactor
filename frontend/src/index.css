@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #0A0A0A;
+  color: #FFFFFF;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Brutalist Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #1A1A1A;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF5F1F;
+}
+
+.brutalist-card {
+  @apply bg-matrix-gray border border-matrix-orange p-6 shadow-[4px_4px_0px_0px_rgba(255,95,31,1)];
+}
+
+.brutalist-input {
+  @apply bg-matrix-black border border-white p-2 focus:border-matrix-orange focus:outline-none font-mono transition-colors;
+}
+
+.brutalist-button {
+  @apply bg-matrix-orange text-black font-bold py-2 px-4 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all;
+}
