@@ -68,12 +68,10 @@ public class BorderoService {
             document.add(new Paragraph(" "));
 
             // Titles Table
-            PdfPTable table = new PdfPTable(11);
+            PdfPTable table = new PdfPTable(12);
             table.setWidthPercentage(100);
-            // Adjusted widths: Título(1f), Sacado(2.5f), Venc(1.5f), VencAdj(1.5f),
-            // Prazo(1f), V.Face(2.5f), Desagio(2f), Adval(2f), IOF(2f), Tarifas(2f),
-            // Líquido(2.5f)
-            float[] widths = { 1f, 2.5f, 1.5f, 1.5f, 1f, 2.5f, 2f, 2f, 2f, 2f, 2.5f };
+            // Adjusted widths: Título(1f), Sacado(2.5f), Emissão(1.5f), Venc(1.5f), VencAdj(1.5f), Prazo(1f), V.Face(2.5f), Desagio(2f), Adval(2f), IOF(2f), Tarifas(2f), Líquido(2.5f)
+            float[] widths = { 1f, 2.5f, 1.5f, 1.5f, 1.5f, 1f, 2.5f, 2f, 2f, 2f, 2f, 2.5f };
             table.setWidths(widths);
 
             addTableHeader(table, tableHeaderFont);
@@ -100,6 +98,7 @@ public class BorderoService {
 
                 table.addCell(createCell(item.numero(), tableBodyFont));
                 table.addCell(createCell(item.sacado(), tableBodyFont));
+                table.addCell(createCell(item.dataEmissao() != null ? item.dataEmissao().format(dtf) : "N/A", tableBodyFont));
                 table.addCell(createCell(item.vencimento().format(dtf), tableBodyFont));
                 table.addCell(createCell(res.vencimentoAjustado().format(dtf), tableBodyFont));
                 table.addCell(createCell(String.valueOf(res.prazoEfetivo()), tableBodyFont));
@@ -135,6 +134,30 @@ public class BorderoService {
 
             document.add(summary);
 
+            // Item 5: Legal Declarations
+            document.add(new Paragraph(" "));
+            Font declarationFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            String legalText = "O Cedente abaixo assinado declara expressamente, para todos os fins de direito, que os títulos descritos neste borderô são legítimos, originários de transações mercantis efetivas ou prestação de serviços reais, assumindo a responsabilidade civil e criminal por quaisquer irregularidades ou vícios ocultos. Cedemos e transferimos estes créditos, sem reservas, à IA369 GFACTOR.";
+            Paragraph declaration = new Paragraph(legalText, declarationFont);
+            declaration.setAlignment(Element.ALIGN_JUSTIFIED);
+            document.add(declaration);
+
+            // Item 6: Signatures
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph(" "));
+            PdfPTable signatureTable = new PdfPTable(2);
+            signatureTable.setWidthPercentage(100);
+            
+            PdfPCell c1 = createNoBorderCell("_________________________________________\nCEDENTE (FATURIZADA)\nDEFAULT CLIENT", subHeaderFont);
+            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            
+            PdfPCell c2 = createNoBorderCell("_________________________________________\nCESSIONÁRIO (FATURIZADORA)\nIA369 GFACTOR", subHeaderFont);
+            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            
+            signatureTable.addCell(c1);
+            signatureTable.addCell(c2);
+            document.add(signatureTable);
+
             document.close();
         } catch (DocumentException e) {
             e.printStackTrace();
@@ -144,8 +167,8 @@ public class BorderoService {
     }
 
     private void addTableHeader(PdfPTable table, Font font) {
-        String[] headers = { "Título", "Sacado", "Venc.", "Venc. Adj.", "Prazo", "V. Face", "Deságio", "Adval.", "IOF",
-                "Tarifas", "Líquido" };
+        String[] headers = { "Título", "Sacado", "Emissão", "Venc.", "Venc. Adj.", "Prazo", "V. Face", "Deságio",
+                "Adval.", "IOF", "Tarifas", "Líquido" };
         for (String h : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(h, font));
             cell.setBackgroundColor(java.awt.Color.LIGHT_GRAY);
@@ -184,6 +207,7 @@ public class BorderoService {
             String numero,
             String sacado,
             BigDecimal valor,
-            LocalDate vencimento) {
+            LocalDate vencimento,
+            LocalDate dataEmissao) {
     }
 }

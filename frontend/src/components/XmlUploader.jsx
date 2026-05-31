@@ -123,7 +123,8 @@ const XmlUploader = () => {
                         numero: dup.numero,
                         sacado: file.sacado,
                         valor: parseFloat(dup.valor),
-                        vencimento: dup.vencimento
+                        vencimento: dup.vencimento,
+                        dataEmissao: file.dataEmissao
                     }))
             );
 
