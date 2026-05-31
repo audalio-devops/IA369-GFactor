@@ -176,7 +176,7 @@ public class BorderoService {
     private String formatMoney(BigDecimal val) {
         if (val == null)
             return "R$ 0,00";
-        java.text.NumberFormat nf = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.of("pt", "BR"));
+        java.text.NumberFormat nf = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.forLanguageTag("pt-BR"));
         return nf.format(val);
     }
 
