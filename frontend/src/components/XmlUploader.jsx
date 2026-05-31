@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 const XmlUploader = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [files, setFiles] = useState([]);
+    const [isGenerating, setIsGenerating] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleDragOver = (e) => {
@@ -16,9 +18,15 @@ const XmlUploader = () => {
     };
 
     const formatDate = (dateStr) => {
-        if (!dateStr || dateStr === "N/A") return dateStr;
+        if (!dateStr || dateStr === "N/A" || isNaN(Date.parse(dateStr))) return "--/--/----";
         const [year, month, day] = dateStr.split('-');
         return `${day}/${month}/${year}`;
+    };
+
+    const isValidDate = (dateStr) => {
+        if (!dateStr || dateStr === "N/A") return false;
+        const d = new Date(dateStr);
+        return d instanceof Date && !isNaN(d);
     };
 
     const formatCurrency = (val) => {
@@ -82,6 +90,72 @@ const XmlUploader = () => {
 
     const handleFileSelect = (e) => {
         processFiles(e.target.files);
+    };
+
+    const handleGenerateBordero = async () => {
+        if (isGenerating) return;
+        setIsGenerating(true);
+        try {
+            // 1. Fetch current settings
+            let settings, tarifasCustomizadas;
+            try {
+                const [taxasRes, customRes] = await Promise.all([
+                    axios.get('http://localhost:8080/api/settings/taxas'),
+                    axios.get('http://localhost:8080/api/settings/tarifas-custom')
+                ]);
+                settings = taxasRes.data;
+                tarifasCustomizadas = customRes.data;
+            } catch (err) {
+                console.error("Settings fetch failed", err);
+                alert("Erro ao buscar configurações das taxas. Verifique se o servidor backend está rodando.");
+                return;
+            }
+
+            // 2. Prepare items (all duplicatas from all files)
+            const items = files.flatMap(file =>
+                file.duplicatas
+                    .filter(dup => {
+                        const valid = isValidDate(dup.vencimento) && !isNaN(parseFloat(dup.valor));
+                        if (!valid) console.warn(`Duplicata inválida ignorada: ${dup.numero}`, dup);
+                        return valid;
+                    })
+                    .map(dup => ({
+                        numero: dup.numero,
+                        sacado: file.sacado,
+                        valor: parseFloat(dup.valor),
+                        vencimento: dup.vencimento
+                    }))
+            );
+
+            if (items.length === 0) {
+                alert("Nenhuma duplicata válida encontrada para gerar o borderô. Verifique as datas e valores nos XMLs.");
+                return;
+            }
+
+            // 3. Request PDF
+            const response = await axios.post('http://localhost:8080/api/bordero/generate', {
+                items,
+                ...settings,
+                tarifasCustomizadas
+            }, { responseType: 'blob' });
+
+            // 4. Download
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `bordero_${new Date().toISOString().split('T')[0]}_${new Date().getTime()}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            alert("Borderô gerado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao gerar borderô", error);
+            const msg = error.response ? `Erro do servidor: ${error.response.status}` : "Erro ao conectar com o servidor. Verifique se o backend está ativo.";
+            alert(msg);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const triggerFileInput = () => {
@@ -177,8 +251,12 @@ const XmlUploader = () => {
                     ))}
 
                     <div className="mt-8 flex justify-end">
-                        <button className="brutalist-button px-12 py-4 flex items-center gap-4 text-xl">
-                            ENVIAR PARA ANÁLISE
+                        <button
+                            onClick={handleGenerateBordero}
+                            disabled={isGenerating}
+                            className={`brutalist-button px-12 py-4 flex items-center gap-4 text-xl ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {isGenerating ? 'PROCESSANDO...' : 'GERAR BORDERÔ'}
                             <FileText className="w-6 h-6" />
                         </button>
                     </div>
