@@ -16,6 +16,12 @@ const Clientes = () => {
         razao_social: '',
         cnpj: '',
         taxaPadraoDesagio: 0,
+        faturamentoAnual: 0,
+        enderecoCompleto: '',
+        contatoNome: '',
+        contatoTelefoneFixo: '',
+        contatoCelular: '',
+        contatoEmail: '',
         ativo: true,
         versao: 0
     });
@@ -58,7 +64,19 @@ const Clientes = () => {
 
             setIsModalOpen(false);
             setEditingId(null);
-            setFormData({ razao_social: '', cnpj: '', taxaPadraoDesagio: 0, ativo: true, versao: 0 });
+            setFormData({
+                razao_social: '',
+                cnpj: '',
+                taxaPadraoDesagio: 0,
+                faturamentoAnual: 0,
+                enderecoCompleto: '',
+                contatoNome: '',
+                contatoTelefoneFixo: '',
+                contatoCelular: '',
+                contatoEmail: '',
+                ativo: true,
+                versao: 0
+            });
             fetchCedentes();
         } catch (err) {
             alert(err.message);
@@ -71,6 +89,12 @@ const Clientes = () => {
             razao_social: cedente.razao_social,
             cnpj: cedente.cnpj,
             taxaPadraoDesagio: cedente.taxaPadraoDesagio,
+            faturamentoAnual: cedente.faturamentoAnual || 0,
+            enderecoCompleto: cedente.enderecoCompleto || '',
+            contatoNome: cedente.contatoNome || '',
+            contatoTelefoneFixo: cedente.contatoTelefoneFixo || '',
+            contatoCelular: cedente.contatoCelular || '',
+            contatoEmail: cedente.contatoEmail || '',
             ativo: cedente.ativo,
             versao: cedente.versao
         });
@@ -121,7 +145,23 @@ const Clientes = () => {
                     </label>
 
                     <button
-                        onClick={() => { setEditingId(null); setFormData({ razao_social: '', cnpj: '', taxaPadraoDesagio: 0, ativo: true, versao: 0 }); setIsModalOpen(true); }}
+                        onClick={() => {
+                            setEditingId(null);
+                            setFormData({
+                                razao_social: '',
+                                cnpj: '',
+                                taxaPadraoDesagio: 0,
+                                faturamentoAnual: 0,
+                                enderecoCompleto: '',
+                                contatoNome: '',
+                                contatoTelefoneFixo: '',
+                                contatoCelular: '',
+                                contatoEmail: '',
+                                ativo: true,
+                                versao: 0
+                            });
+                            setIsModalOpen(true);
+                        }}
                         className="brutalist-button py-3 px-8 bg-matrix-orange text-black flex items-center gap-2 hover:scale-105 active:scale-95"
                     >
                         <UserPlus className="w-5 h-5" />
@@ -205,12 +245,12 @@ const Clientes = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
 
-                    <div className="brutalist-card bg-matrix-black border-matrix-orange max-w-xl w-full relative z-[110] animate-in zoom-in-95 duration-300">
-                        <h3 className="text-3xl font-black font-mono tracking-tighter uppercase mb-8 border-b border-white/5 pb-4">
+                    <div className="brutalist-card bg-matrix-black border-matrix-orange max-w-xl w-full relative z-[110] animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        <h3 className="text-3xl font-black font-mono tracking-tighter uppercase mb-4 border-b border-white/5 pb-4 shrink-0">
                             {editingId ? 'Editar Cedente' : 'Novo Cedente'}
                         </h3>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
                             <div className="space-y-2">
                                 <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Razão Social</label>
                                 <input
@@ -234,16 +274,86 @@ const Clientes = () => {
                                 />
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Taxa Padrão de Deságio (% a.m.)</label>
+                                    <input
+                                        required
+                                        step="0.01"
+                                        type="number"
+                                        className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                        value={formData.taxaPadraoDesagio}
+                                        onChange={e => setFormData({ ...formData, taxaPadraoDesagio: parseFloat(e.target.value) })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Faturamento Anual (Valor)</label>
+                                    <input
+                                        required
+                                        step="0.01"
+                                        type="number"
+                                        className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                        value={formData.faturamentoAnual}
+                                        onChange={e => setFormData({ ...formData, faturamentoAnual: parseFloat(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Taxa Padrão de Deságio (% a.m.)</label>
+                                <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Endereço Completo</label>
                                 <input
                                     required
-                                    step="0.01"
-                                    type="number"
+                                    type="text"
                                     className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
-                                    value={formData.taxaPadraoDesagio}
-                                    onChange={e => setFormData({ ...formData, taxaPadraoDesagio: parseFloat(e.target.value) })}
+                                    value={formData.enderecoCompleto}
+                                    onChange={e => setFormData({ ...formData, enderecoCompleto: e.target.value })}
                                 />
+                            </div>
+
+                            <div className="border-t border-white/5 pt-4">
+                                <h4 className="text-xs font-black uppercase tracking-widest text-matrix-orange mb-4">Informações de Contato</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Nome do Contato</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                            value={formData.contatoNome}
+                                            onChange={e => setFormData({ ...formData, contatoNome: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Tel Fixo</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                            value={formData.contatoTelefoneFixo}
+                                            onChange={e => setFormData({ ...formData, contatoTelefoneFixo: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Celular</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                            value={formData.contatoCelular}
+                                            onChange={e => setFormData({ ...formData, contatoCelular: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-[10px] uppercase font-black opacity-50 tracking-widest block">Email</label>
+                                        <input
+                                            required
+                                            type="email"
+                                            className="w-full bg-matrix-gray/40 border border-white/10 p-3 font-mono outline-none focus:border-matrix-orange"
+                                            value={formData.contatoEmail}
+                                            onChange={e => setFormData({ ...formData, contatoEmail: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-4 py-2">
@@ -258,7 +368,7 @@ const Clientes = () => {
                                 </span>
                             </div>
 
-                            <div className="flex gap-4 pt-6">
+                            <div className="flex gap-4 pt-6 sticky bottom-0 bg-matrix-black pb-2 mt-auto border-t border-white/5">
                                 <button
                                     type="button"
                                     onClick={(e) => { e.preventDefault(); setIsModalOpen(false); }}

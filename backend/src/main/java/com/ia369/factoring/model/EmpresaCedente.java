@@ -24,6 +24,24 @@ public class EmpresaCedente {
     @Column(name = "taxa_padrao_desagio", nullable = false, precision = 18, scale = 6)
     private BigDecimal taxaPadraoDesagio;
 
+    @Column(name = "faturamento_anual", precision = 18, scale = 2)
+    private BigDecimal faturamentoAnual;
+
+    @Column(name = "endereco_completo", length = 500)
+    private String enderecoCompleto;
+
+    @Column(name = "contato_nome", length = 200)
+    private String contatoNome;
+
+    @Column(name = "contato_telefone_fixo", length = 20)
+    private String contatoTelefoneFixo;
+
+    @Column(name = "contato_celular", length = 20)
+    private String contatoCelular;
+
+    @Column(name = "contato_email", length = 200)
+    private String contatoEmail;
+
     @Version
     private Integer versao;
 
