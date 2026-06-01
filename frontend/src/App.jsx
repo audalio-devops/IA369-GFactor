@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import SimuladorForm from './components/SimuladorForm';
 import XmlUploader from './components/XmlUploader';
 import Configuracoes from './components/Configuracoes';
+import Clientes from './components/Clientes';
 import { Bell, Clock, LayoutDashboard } from 'lucide-react';
 
 function App() {
@@ -109,8 +110,15 @@ function App() {
             </div>
           )}
 
-          {/* 4. UNDER CONSTRUCTION VIEWS */}
-          {['clients', 'monitor', 'marketing', 'tutorials', 'notifications'].includes(activeTab) && (
+          {/* 4. CLIENTES VIEW */}
+          {activeTab === 'clients' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Clientes />
+            </div>
+          )}
+
+          {/* 5. UNDER CONSTRUCTION VIEWS */}
+          {['monitor', 'marketing', 'tutorials', 'notifications'].includes(activeTab) && (
             <div className="brutalist-card border-dashed opacity-40 flex flex-col items-center justify-center py-48 gap-4 animate-in zoom-in-95 duration-300">
               <LayoutDashboard className="w-16 h-16 text-matrix-orange" />
               <div className="text-center">

@@ -193,3 +193,69 @@ Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/flywa
 2026-05-31T14:42:28.964-03:00  INFO 17848 --- [factoring-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
 2026-05-31T14:42:28.968-03:00  INFO 17848 --- [factoring-backend] [           main] c.ia369.factoring.FactoringApplication   : Started FactoringApplication in 4.144 seconds (process running for 4.789)
 2026-05-31T15:31:21.564-03:00  WARN 17848 --- [factoring-backend] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=24m53s902ms740┬Ás).
+2026-05-31T23:17:17.435-03:00  INFO 17848 --- [factoring-backend] [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-31T23:17:17.435-03:00  INFO 17848 --- [factoring-backend] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-31T23:17:17.451-03:00  INFO 17848 --- [factoring-backend] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 16 ms
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.nome,
+        tc1_0.tipo_cobranca,
+        tc1_0.valor 
+    from
+        tarifas_customizadas tc1_0
+Hibernate: 
+    select
+        pt1_0.id,
+        pt1_0.advalorem_percent,
+        pt1_0.cedente_id,
+        pt1_0.float_bancario,
+        pt1_0.iof_diario,
+        pt1_0.iof_fixo,
+        pt1_0.is_padrao,
+        pt1_0.tarifa_boleto,
+        pt1_0.taxa_mensal 
+    from
+        parametros_taxas pt1_0
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.nome,
+        tc1_0.tipo_cobranca,
+        tc1_0.valor 
+    from
+        tarifas_customizadas tc1_0
+Hibernate: 
+    select
+        pt1_0.id,
+        pt1_0.advalorem_percent,
+        pt1_0.cedente_id,
+        pt1_0.float_bancario,
+        pt1_0.iof_diario,
+        pt1_0.iof_fixo,
+        pt1_0.is_padrao,
+        pt1_0.tarifa_boleto,
+        pt1_0.taxa_mensal 
+    from
+        parametros_taxas pt1_0
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.nome,
+        tc1_0.tipo_cobranca,
+        tc1_0.valor 
+    from
+        tarifas_customizadas tc1_0
+Hibernate: 
+    select
+        pt1_0.id,
+        pt1_0.advalorem_percent,
+        pt1_0.cedente_id,
+        pt1_0.float_bancario,
+        pt1_0.iof_diario,
+        pt1_0.iof_fixo,
+        pt1_0.is_padrao,
+        pt1_0.tarifa_boleto,
+        pt1_0.taxa_mensal 
+    from
+        parametros_taxas pt1_0
