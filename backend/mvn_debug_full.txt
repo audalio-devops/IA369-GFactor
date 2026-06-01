@@ -1,0 +1,34 @@
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[ERROR] [ERROR] Some problems were encountered while processing the POMs:
+[ERROR] 'dependencies.dependency.version' for org.flywaydb:flyway-database-postgresql:jar is missing. @ line 54, column 15
+ @ 
+[ERROR] The build could not read 1 project -> [Help 1]
+org.apache.maven.project.ProjectBuildingException: Some problems were encountered while processing the POMs:
+[ERROR] 'dependencies.dependency.version' for org.flywaydb:flyway-database-postgresql:jar is missing. @ line 54, column 15
+
+    at org.apache.maven.project.DefaultProjectBuilder.build (DefaultProjectBuilder.java:389)
+    at org.apache.maven.graph.DefaultGraphBuilder.collectProjects (DefaultGraphBuilder.java:349)
+    at org.apache.maven.graph.DefaultGraphBuilder.getProjectsForMavenReactor (DefaultGraphBuilder.java:340)
+    at org.apache.maven.graph.DefaultGraphBuilder.build (DefaultGraphBuilder.java:76)
+    at org.apache.maven.DefaultMaven.buildGraph (DefaultMaven.java:448)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:197)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:283)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:226)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:407)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:348)
+[ERROR]   
+[ERROR]   The project com.ia369:factoring-backend:0.0.1-SNAPSHOT (C:\Projetos\IA369-GFactor\backend\pom.xml) has 1 error
+[ERROR]     'dependencies.dependency.version' for org.flywaydb:flyway-database-postgresql:jar is missing. @ line 54, column 15
+[ERROR] 
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/ProjectBuildingException

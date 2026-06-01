@@ -1,3 +1,2 @@
-ALTER TABLE parametros_taxas 
-ADD COLUMN iof_fixo DECIMAL(10, 4) NOT NULL DEFAULT 0.0038,
-ADD COLUMN iof_diario DECIMAL(10, 6) NOT NULL DEFAULT 0.0000411;
+-- Migration V2: Redundante (Colunas já existem no baseline V1)
+-- Alterações removidas pois já estão integradas no V1 do banco atual.
