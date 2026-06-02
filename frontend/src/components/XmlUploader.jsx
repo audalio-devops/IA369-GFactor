@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle, Trash2, X, Send } from 'lucide-react';
 
 const XmlUploader = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [files, setFiles] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [cnpjCedente, setCnpjCedente] = useState('');
     const fileInputRef = useRef(null);
 
     const handleDragOver = (e) => {
@@ -64,14 +65,16 @@ const XmlUploader = () => {
                     }));
 
                     resolve({
-                        name: file.name,
+                        id: Math.random().toString(36).substr(2, 9),
+                        fileName: file.name,
                         chave,
                         emitente,
                         sacado,
                         valorTotal,
                         dataEmissao,
                         duplicatas,
-                        status: chave.length === 44 ? "valid" : "invalid"
+                        status: chave.length === 44 ? "valid" : "invalid",
+                        selected: true
                     });
                 };
                 reader.readAsText(file);
@@ -92,7 +95,32 @@ const XmlUploader = () => {
         processFiles(e.target.files);
     };
 
+    const toggleFileSelection = (id) => {
+        setFiles(prev => prev.map(f => f.id === id ? { ...f, selected: !f.selected } : f));
+    };
+
+    const handleClearSelection = () => {
+        setFiles(prev => prev.map(f => ({ ...f, selected: false })));
+    };
+
+    const handleCancel = () => {
+        setFiles([]);
+        setCnpjCedente('');
+    };
+
     const handleGenerateBordero = async () => {
+        const selectedFiles = files.filter(f => f.selected);
+
+        if (!cnpjCedente) {
+            alert("Por favor, informe o CNPJ do Cliente (Cedente).");
+            return;
+        }
+
+        if (selectedFiles.length === 0) {
+            alert("Por favor, selecione ao menos uma nota fiscal para processar.");
+            return;
+        }
+
         if (isGenerating) return;
         setIsGenerating(true);
         try {
@@ -111,8 +139,8 @@ const XmlUploader = () => {
                 return;
             }
 
-            // 2. Prepare items (all duplicatas from all files)
-            const items = files.flatMap(file =>
+            // 2. Prepare items (all duplicatas from selected files)
+            const items = selectedFiles.flatMap(file =>
                 file.duplicatas
                     .filter(dup => {
                         const valid = isValidDate(dup.vencimento) && !isNaN(parseFloat(dup.valor));
@@ -129,13 +157,14 @@ const XmlUploader = () => {
             );
 
             if (items.length === 0) {
-                alert("Nenhuma duplicata válida encontrada para gerar o borderô. Verifique as datas e valores nos XMLs.");
+                alert("Nenhuma duplicata válida encontrada para gerar o borderô. Verifique as datas e valores nos XMLs selecionados.");
                 return;
             }
 
             // 3. Request PDF
             const response = await axios.post('http://localhost:8080/api/bordero/generate', {
                 items,
+                cnpjCedente,
                 ...settings,
                 tarifasCustomizadas
             }, { responseType: 'blob' });
@@ -144,7 +173,7 @@ const XmlUploader = () => {
             const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `bordero_${new Date().toISOString().split('T')[0]}_${new Date().getTime()}.pdf`);
+            link.setAttribute('download', `bordero_${cnpjCedente}_${new Date().toISOString().split('T')[0]}.pdf`);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -163,14 +192,35 @@ const XmlUploader = () => {
         fileInputRef.current.click();
     };
 
+    const selectedCount = files.filter(f => f.selected).length;
+
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             <header className="border-b-4 border-matrix-orange pb-4">
-                <h1 className="text-4xl font-black font-mono tracking-tighter uppercase italic">
-                    Upload de Notas (XML)
-                </h1>
-                <p className="text-matrix-orange font-mono text-sm uppercase">Parser NF-e 4.00</p>
+                <div className="flex items-center gap-3">
+                    <FileText className="w-10 h-10 text-matrix-orange" />
+                    <div>
+                        <h1 className="text-3xl font-black font-mono tracking-tighter uppercase italic">
+                            Upload de Notas Fiscais Eletrônicas
+                        </h1>
+                        <p className="text-matrix-orange font-mono text-xs uppercase tracking-widest">Sistema de Processamento em Lote de NFe-XML</p>
+                    </div>
+                </div>
             </header>
+
+            {/* CNPJ INPUT */}
+            <div className="bg-matrix-gray/40 p-6 border-l-8 border-matrix-orange">
+                <label className="block text-xs font-mono uppercase opacity-70 mb-2">
+                    CNPJ do Cliente (Cedente) *
+                </label>
+                <input
+                    type="text"
+                    value={cnpjCedente}
+                    onChange={(e) => setCnpjCedente(e.target.value)}
+                    placeholder="Exemplo: 12345678000195"
+                    className="w-full bg-matrix-black border-2 border-white/10 p-3 font-mono text-xl focus:border-matrix-orange outline-none transition-colors"
+                />
+            </div>
 
             {/* DROPZONE */}
             <div
@@ -179,8 +229,8 @@ const XmlUploader = () => {
                 onDrop={handleDrop}
                 onClick={triggerFileInput}
                 className={`
-                    border-4 border-dashed p-12 transition-all flex flex-col items-center justify-center space-y-4 cursor-pointer
-                    ${isDragging ? 'border-matrix-orange bg-matrix-orange/10 scale-[0.98]' : 'border-white/20 bg-matrix-gray/30'}
+                    border-4 border-dashed p-10 transition-all flex flex-col items-center justify-center space-y-4 cursor-pointer
+                    ${isDragging ? 'border-matrix-orange bg-matrix-orange/10 scale-[0.99]' : 'border-white/20 bg-matrix-gray/30'}
                 `}
             >
                 <input
@@ -191,74 +241,113 @@ const XmlUploader = () => {
                     multiple
                     onChange={handleFileSelect}
                 />
-                <Upload className={`w-16 h-16 ${isDragging ? 'text-matrix-orange' : 'text-white/20'}`} />
+                <Upload className={`w-12 h-12 ${isDragging ? 'text-matrix-orange' : 'text-white/20'}`} />
                 <div className="text-center">
-                    <p className="text-xl font-bold uppercase">Arraste seus arquivos .xml aqui</p>
-                    <p className="text-xs font-mono opacity-50 uppercase mt-2">ou clique para selecionar do PC</p>
+                    <p className="text-lg font-bold uppercase tracking-tight">Clique aqui ou arraste os arquivos XML</p>
+                    <p className="text-[10px] font-mono opacity-50 uppercase mt-1">Suporte para múltiplos arquivos simultaneamente</p>
                 </div>
             </div>
+
+            {/* SELECTION INFO */}
+            {files.length > 0 && (
+                <div className="flex items-center gap-2 text-matrix-orange font-mono text-sm uppercase font-bold px-1">
+                    <FileText className="w-4 h-4" />
+                    <span>Arquivos Selecionados ( {selectedCount} )</span>
+                </div>
+            )}
 
             {/* PREVIEW GRID */}
             {files.length > 0 && (
                 <div className="space-y-4">
-                    {files.map((file, idx) => (
-                        <div key={idx} className="border-2 border-white/10 bg-matrix-black overflow-hidden">
-                            {/* INVOICE HEADER ROW */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-l-4 border-matrix-orange items-center">
-                                <div className="md:col-span-1 flex justify-center">
-                                    <CheckCircle className="text-matrix-green w-6 h-6" />
-                                </div>
-                                <div className="md:col-span-4">
-                                    <p className="text-[10px] opacity-50 uppercase font-mono">Chave de Acesso</p>
-                                    <p className="text-xs font-mono break-all">{file.chave}</p>
-                                </div>
-                                <div className="md:col-span-3">
-                                    <p className="text-[10px] opacity-50 uppercase font-mono">Emitente / Sacado</p>
-                                    <p className="text-sm font-bold truncate">{file.emitente}</p>
-                                    <p className="text-[10px] opacity-50 truncate">{file.sacado}</p>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <p className="text-[10px] opacity-50 uppercase font-mono">Emissão</p>
-                                    <p className="text-xs font-mono">{formatDate(file.dataEmissao)}</p>
-                                </div>
-                                <div className="md:col-span-2 text-right">
-                                    <p className="text-[10px] opacity-50 uppercase font-mono">Total</p>
-                                    <p className="text-lg font-black text-matrix-orange whitespace-nowrap">R$ {formatCurrency(file.valorTotal)}</p>
-                                </div>
-                            </div>
-
-                            {/* DUPLICATAS SUB-TABLE */}
-                            {file.duplicatas.length > 0 && (
-                                <div className="bg-white/5 p-4 border-t border-white/5">
-                                    <p className="text-[10px] font-black uppercase mb-2 tracking-widest text-matrix-orange">
-                                        Detalhamento de Duplicatas ({file.duplicatas.length})
-                                    </p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                        {file.duplicatas.map((dup, dIdx) => (
-                                            <div key={dIdx} className="bg-matrix-gray/40 border border-white/10 p-2 flex justify-between items-center">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] opacity-50 uppercase">Nº {dup.numero}</span>
-                                                    <span className="text-xs font-mono">{formatDate(dup.vencimento)}</span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-sm font-black">R$ {formatCurrency(dup.valor)}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+                    <div className="grid gap-3">
+                        {files.map((file) => (
+                            <div
+                                key={file.id}
+                                onClick={() => toggleFileSelection(file.id)}
+                                className={`
+                                    border-2 transition-all cursor-pointer overflow-hidden
+                                    ${file.selected ? 'border-matrix-orange bg-matrix-orange/5' : 'border-white/5 bg-matrix-black grayscale opacity-70'}
+                                `}
+                            >
+                                {/* INVOICE HEADER ROW */}
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center">
+                                    <div className="md:col-span-1 flex justify-center">
+                                        <div className={`
+                                            w-6 h-6 border-2 flex items-center justify-center transition-colors
+                                            ${file.selected ? 'border-matrix-orange bg-matrix-orange text-black' : 'border-white/20'}
+                                        `}>
+                                            {file.selected && <CheckCircle className="w-4 h-4" />}
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-5">
+                                        <p className="text-[10px] opacity-60 uppercase font-mono mb-1">Arquivo XML: {file.fileName}</p>
+                                        <p className="text-[10px] opacity-40 uppercase font-mono">Chave: {file.chave}</p>
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <p className="text-[10px] opacity-50 uppercase font-mono">Sacado</p>
+                                        <p className="text-xs font-bold truncate tracking-tighter italic">{file.sacado}</p>
+                                    </div>
+                                    <div className="md:col-span-1">
+                                        <p className="text-[10px] opacity-50 uppercase font-mono">Emissão</p>
+                                        <p className="text-[10px] font-mono">{formatDate(file.dataEmissao)}</p>
+                                    </div>
+                                    <div className="md:col-span-2 text-right">
+                                        <p className="text-[10px] opacity-50 uppercase font-mono">Total NFe R$</p>
+                                        <p className="text-lg font-black text-matrix-orange">{formatCurrency(file.valorTotal)}</p>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
 
-                    <div className="mt-8 flex justify-end">
+                                {/* DUPLICATAS SUB-TABLE */}
+                                {file.selected && file.duplicatas.length > 0 && (
+                                    <div className="bg-white/5 p-4 border-t border-white/5">
+                                        <p className="text-[10px] font-black uppercase mb-2 tracking-widest text-matrix-orange">
+                                            Detalhamento de Duplicatas ({file.duplicatas.length})
+                                        </p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            {file.duplicatas.map((dup, dIdx) => (
+                                                <div key={dIdx} className="bg-matrix-gray/40 border border-white/10 p-2 flex justify-between items-center">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] opacity-50 uppercase">Nº {dup.numero}</span>
+                                                        <span className="text-xs font-mono">{formatDate(dup.vencimento)}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-sm font-black">R$ {formatCurrency(dup.valor)}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-6 flex flex-wrap gap-4 justify-between items-center bg-matrix-gray/20 p-6 border-t-2 border-white/5">
+                        <div className="flex gap-4">
+                            <button
+                                onClick={handleCancel}
+                                className="px-6 py-3 border-2 border-white/20 text-xs font-mono uppercase hover:bg-white/5 transition-colors flex items-center gap-2"
+                            >
+                                <X className="w-4 h-4" /> Cancelar
+                            </button>
+                            <button
+                                onClick={handleClearSelection}
+                                className="px-6 py-3 border-2 border-white/20 text-xs font-mono uppercase hover:bg-white/5 transition-colors flex items-center gap-2"
+                            >
+                                <Trash2 className="w-4 h-4" /> Limpar toda a seleção
+                            </button>
+                        </div>
+
                         <button
                             onClick={handleGenerateBordero}
-                            disabled={isGenerating}
-                            className={`brutalist-button px-12 py-4 flex items-center gap-4 text-xl ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isGenerating || files.length === 0}
+                            className={`
+                                brutalist-button px-10 py-4 flex items-center gap-4 text-lg
+                                ${isGenerating || files.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                            `}
                         >
-                            {isGenerating ? 'PROCESSANDO...' : 'GERAR BORDERÔ'}
-                            <FileText className="w-6 h-6" />
+                            <Send className="w-5 h-5" />
+                            {isGenerating ? 'PROCESSANDO...' : 'Processar e Gerar o Borderô'}
                         </button>
                     </div>
                 </div>

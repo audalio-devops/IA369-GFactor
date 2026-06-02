@@ -24,6 +24,7 @@ public class BorderoService {
     }
 
     public byte[] generateBorderoPdf(List<BorderoItemRequest> items,
+            String cnpjCedente,
             BigDecimal taxaMensal,
             BigDecimal advaloremPercent,
             BigDecimal tarifaBoleto,
@@ -63,14 +64,18 @@ public class BorderoService {
             infoTable.addCell(createNoBorderCell(
                     "Data da Operação: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                     subHeaderFont));
-            infoTable.addCell(createNoBorderCell("Cedente: DEFAULT CLIENT", subHeaderFont));
+            infoTable.addCell(
+                    createNoBorderCell("Cedente: " + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"),
+                            subHeaderFont));
             document.add(infoTable);
             document.add(new Paragraph(" "));
 
             // Titles Table
             PdfPTable table = new PdfPTable(12);
             table.setWidthPercentage(100);
-            // Adjusted widths: Título(1f), Sacado(2.5f), Emissão(1.5f), Venc(1.5f), VencAdj(1.5f), Prazo(1f), V.Face(2.5f), Desagio(2f), Adval(2f), IOF(2f), Tarifas(2f), Líquido(2.5f)
+            // Adjusted widths: Título(1f), Sacado(2.5f), Emissão(1.5f), Venc(1.5f),
+            // VencAdj(1.5f), Prazo(1f), V.Face(2.5f), Desagio(2f), Adval(2f), IOF(2f),
+            // Tarifas(2f), Líquido(2.5f)
             float[] widths = { 1f, 2.5f, 1.5f, 1.5f, 1.5f, 1f, 2.5f, 2f, 2f, 2f, 2f, 2.5f };
             table.setWidths(widths);
 
@@ -98,7 +103,8 @@ public class BorderoService {
 
                 table.addCell(createCell(item.numero(), tableBodyFont));
                 table.addCell(createCell(item.sacado(), tableBodyFont));
-                table.addCell(createCell(item.dataEmissao() != null ? item.dataEmissao().format(dtf) : "N/A", tableBodyFont));
+                table.addCell(
+                        createCell(item.dataEmissao() != null ? item.dataEmissao().format(dtf) : "N/A", tableBodyFont));
                 table.addCell(createCell(item.vencimento().format(dtf), tableBodyFont));
                 table.addCell(createCell(res.vencimentoAjustado().format(dtf), tableBodyFont));
                 table.addCell(createCell(String.valueOf(res.prazoEfetivo()), tableBodyFont));
@@ -147,13 +153,16 @@ public class BorderoService {
             document.add(new Paragraph(" "));
             PdfPTable signatureTable = new PdfPTable(2);
             signatureTable.setWidthPercentage(100);
-            
-            PdfPCell c1 = createNoBorderCell("_________________________________________\nCEDENTE (FATURIZADA)\nDEFAULT CLIENT", subHeaderFont);
+
+            PdfPCell c1 = createNoBorderCell("_________________________________________\nCEDENTE (FATURIZADA)\n"
+                    + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"), subHeaderFont);
             c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            
-            PdfPCell c2 = createNoBorderCell("_________________________________________\nCESSIONÁRIO (FATURIZADORA)\nIA369 GFACTOR", subHeaderFont);
+
+            PdfPCell c2 = createNoBorderCell(
+                    "_________________________________________\nCESSIONÁRIO (FATURIZADORA)\nIA369 GFACTOR",
+                    subHeaderFont);
             c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            
+
             signatureTable.addCell(c1);
             signatureTable.addCell(c2);
             document.add(signatureTable);
@@ -199,8 +208,18 @@ public class BorderoService {
     private String formatMoney(BigDecimal val) {
         if (val == null)
             return "R$ 0,00";
-        java.text.NumberFormat nf = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.forLanguageTag("pt-BR"));
+        java.text.NumberFormat nf = java.text.NumberFormat
+                .getCurrencyInstance(java.util.Locale.forLanguageTag("pt-BR"));
         return nf.format(val);
+    }
+
+    private String formatCnpj(String cnpj) {
+        if (cnpj == null || cnpj.replaceAll("\\D", "").length() != 14) {
+            return cnpj;
+        }
+        String digits = cnpj.replaceAll("\\D", "");
+        return digits.substring(0, 2) + "." + digits.substring(2, 5) + "." + digits.substring(5, 8) + "/" +
+                digits.substring(8, 12) + "-" + digits.substring(12, 14);
     }
 
     public record BorderoItemRequest(

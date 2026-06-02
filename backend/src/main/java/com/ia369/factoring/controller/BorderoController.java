@@ -25,6 +25,7 @@ public class BorderoController {
     public ResponseEntity<byte[]> generateBordero(@RequestBody BorderoRequest request) {
         byte[] pdf = borderoService.generateBorderoPdf(
                 request.items(),
+                request.cnpjCedente(),
                 request.taxaMensal(),
                 request.advaloremPercent(),
                 request.tarifaBoleto(),
@@ -44,6 +45,7 @@ public class BorderoController {
 
     public record BorderoRequest(
             List<BorderoService.BorderoItemRequest> items,
+            String cnpjCedente,
             BigDecimal taxaMensal,
             BigDecimal advaloremPercent,
             BigDecimal tarifaBoleto,

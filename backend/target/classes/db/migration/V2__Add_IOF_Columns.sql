@@ -1,2 +1,0 @@
--- Migration V2: Redundante (Colunas já existem no baseline V1)
--- Alterações removidas pois já estão integradas no V1 do banco atual.

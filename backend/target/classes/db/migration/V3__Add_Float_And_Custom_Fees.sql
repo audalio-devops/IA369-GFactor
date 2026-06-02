@@ -1,2 +1,0 @@
--- Migration V3: Redundante (Colunas/Tabelas já existem no baseline V1)
--- Alterações removidas pois já estão integradas no V1 do banco atual.
