@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+
 const SimuladorForm = () => {
     const today = new Date().toISOString().split('T')[0];
     const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -37,8 +39,8 @@ const SimuladorForm = () => {
         const fetchSettings = async () => {
             try {
                 const [taxasRes, customRes] = await Promise.all([
-                    axios.get('http://localhost:8080/api/settings/taxas'),
-                    axios.get('http://localhost:8080/api/settings/tarifas-custom')
+                    axios.get(`${API_URL}/settings/taxas`),
+                    axios.get(`${API_URL}/settings/tarifas-custom`)
                 ]);
                 if (taxasRes.data.id) {
                     setParams(prev => ({
@@ -59,7 +61,7 @@ const SimuladorForm = () => {
             if (!params.dataVencimento || !params.dataOperacao) return;
             setLoading(true);
             try {
-                const response = await axios.post('http://localhost:8080/api/pricing/simulate', params);
+                const response = await axios.post(`${API_URL}/pricing/simulate`, params);
                 setResults(response.data);
             } catch (error) {
                 // Simplified Fallback logic

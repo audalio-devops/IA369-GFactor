@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, Plus, Trash2, Settings as SettingsIcon, Info } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+
 const Configuracoes = () => {
     const [taxas, setTaxas] = useState({
         taxaMensal: 0,
@@ -24,8 +26,8 @@ const Configuracoes = () => {
     const fetchData = async () => {
         try {
             const [taxasRes, customRes] = await Promise.all([
-                axios.get('http://localhost:8080/api/settings/taxas'),
-                axios.get('http://localhost:8080/api/settings/tarifas-custom')
+                axios.get(`${API_URL}/settings/taxas`),
+                axios.get(`${API_URL}/settings/tarifas-custom`)
             ]);
             if (taxasRes.data.id) setTaxas(taxasRes.data);
             setTarifasCustom(customRes.data);
@@ -42,7 +44,7 @@ const Configuracoes = () => {
     const saveTaxas = async () => {
         setLoading(true);
         try {
-            await axios.post('http://localhost:8080/api/settings/taxas', taxas);
+            await axios.post(`${API_URL}/settings/taxas`, taxas);
             setMessage({ type: 'success', text: 'Taxas padrão atualizadas!' });
             setTimeout(() => setMessage(null), 3000);
         } catch (error) {
@@ -55,7 +57,7 @@ const Configuracoes = () => {
     const addTarifaCustom = async () => {
         if (!newTarifa.nome || newTarifa.valor <= 0) return;
         try {
-            const res = await axios.post('http://localhost:8080/api/settings/tarifas-custom', newTarifa);
+            const res = await axios.post(`${API_URL}/settings/tarifas-custom`, newTarifa);
             setTarifasCustom(prev => [...prev, res.data]);
             setNewTarifa({ nome: '', valor: 0, tipoCobranca: 'BORDERÔ' });
         } catch (error) {
@@ -65,7 +67,7 @@ const Configuracoes = () => {
 
     const deleteTarifaCustom = async (id) => {
         try {
-            await axios.delete(`http://localhost:8080/api/settings/tarifas-custom/${id}`);
+            await axios.delete(`${API_URL}/settings/tarifas-custom/${id}`);
             setTarifasCustom(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error("Erro ao deletar tarifa", error);

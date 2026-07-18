@@ -4,8 +4,8 @@ services:
     container_name: ia369_db
     environment:
       POSTGRES_DB: ia369_factoring
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:

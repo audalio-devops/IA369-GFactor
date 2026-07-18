@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Search, Edit2, Trash2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
-const API_URL = 'http://localhost:8080/api/cedentes';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8090/api'}/cedentes`;
 
 const Clientes = () => {
     const [cedentes, setCedentes] = useState([]);

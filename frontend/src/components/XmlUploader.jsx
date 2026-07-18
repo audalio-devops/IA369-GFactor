@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Upload, FileText, CheckCircle, Trash2, X, Send } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+
 const XmlUploader = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [files, setFiles] = useState([]);
@@ -128,8 +130,8 @@ const XmlUploader = () => {
             let settings, tarifasCustomizadas;
             try {
                 const [taxasRes, customRes] = await Promise.all([
-                    axios.get('http://localhost:8080/api/settings/taxas'),
-                    axios.get('http://localhost:8080/api/settings/tarifas-custom')
+                    axios.get(`${API_URL}/settings/taxas`),
+                    axios.get(`${API_URL}/settings/tarifas-custom`)
                 ]);
                 settings = taxasRes.data;
                 tarifasCustomizadas = customRes.data;
@@ -162,7 +164,7 @@ const XmlUploader = () => {
             }
 
             // 3. Request PDF
-            const response = await axios.post('http://localhost:8080/api/bordero/generate', {
+            const response = await axios.post(`${API_URL}/bordero/generate`, {
                 items,
                 cnpjCedente,
                 ...settings,
