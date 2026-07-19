@@ -11,7 +11,7 @@ const Configuracoes = () => {
         tarifaBoleto: 0,
         iofFixo: 0,
         iofDiario: 0,
-        floatBancario: 1
+        floatBancario: 2
     });
 
     const [tarifasCustom, setTarifasCustom] = useState([]);

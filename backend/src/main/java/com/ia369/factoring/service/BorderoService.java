@@ -1,28 +1,49 @@
 package com.ia369.factoring.service;
 
-import com.ia369.factoring.model.TarifaCustomizada;
+import com.ia369.factoring.model.*;
+import com.ia369.factoring.repository.*;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class BorderoService {
 
-    private final PricingEngine pricingEngine;
-    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    public BorderoService(PricingEngine pricingEngine) {
-        this.pricingEngine = pricingEngine;
+    // Private inner record used to carry both input and computed result per item
+    private record ItemResult(BorderoItemRequest item, PricingEngine.CalculationResult calc, Sacado sacado) {
     }
 
+    private final PricingEngine pricingEngine;
+    private final CedenteRepository cedenteRepository;
+    private final SacadoRepository sacadoRepository;
+    private final BorderoRepository borderoRepository;
+    private final TituloRepository tituloRepository;
+    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public BorderoService(PricingEngine pricingEngine,
+            CedenteRepository cedenteRepository,
+            SacadoRepository sacadoRepository,
+            BorderoRepository borderoRepository,
+            TituloRepository tituloRepository) {
+        this.pricingEngine = pricingEngine;
+        this.cedenteRepository = cedenteRepository;
+        this.sacadoRepository = sacadoRepository;
+        this.borderoRepository = borderoRepository;
+        this.tituloRepository = tituloRepository;
+    }
+
+    @Transactional
     public byte[] generateBorderoPdf(List<BorderoItemRequest> items,
             String cnpjCedente,
             BigDecimal taxaMensal,
@@ -33,6 +54,129 @@ public class BorderoService {
             int floatBancario,
             List<TarifaCustomizada> tarifasCustomizadas) {
 
+        // --- Resolve cedente by CNPJ (digits only) ---
+        String cnpjDigits = cnpjCedente != null ? cnpjCedente.replaceAll("\\D", "") : "";
+        System.out.println("[BORDERO] Buscando cedente com CNPJ: '" + cnpjDigits + "'");
+        EmpresaCedente cedente = (!cnpjDigits.isBlank())
+                ? cedenteRepository.findByCnpj(cnpjDigits).orElseGet(() -> {
+                    System.out
+                            .println("[BORDERO] Cedente não encontrado. Criando placeholder para CNPJ: " + cnpjDigits);
+                    EmpresaCedente placeholder = new EmpresaCedente();
+                    placeholder.setRazao_social("Desconhecido");
+                    placeholder.setCnpj(cnpjDigits);
+                    placeholder.setTaxaPadraoDesagio(java.math.BigDecimal.ZERO);
+                    return cedenteRepository.save(placeholder);
+                })
+                : null;
+        System.out.println("[BORDERO] Cedente resolvido: "
+                + (cedente != null ? cedente.getRazao_social() : "NULL (CNPJ em branco)"));
+
+        // --- Compute pricing results and resolve/create sacados ---
+        List<ItemResult> results = new ArrayList<>();
+        BigDecimal totalBruto = BigDecimal.ZERO;
+        BigDecimal totalLiquido = BigDecimal.ZERO;
+        BigDecimal totalDesagio = BigDecimal.ZERO;
+        BigDecimal totalAdvalorem = BigDecimal.ZERO;
+        BigDecimal totalTarifas = BigDecimal.ZERO;
+        BigDecimal totalIof = BigDecimal.ZERO;
+
+        for (BorderoItemRequest item : (items == null ? List.<BorderoItemRequest>of() : items)) {
+            PricingEngine.CalculationResult res = pricingEngine.calculate(
+                    item.valor(), item.vencimento(), LocalDate.now(),
+                    taxaMensal, advaloremPercent, tarifaBoleto,
+                    iofFixo, iofDiario, floatBancario, tarifasCustomizadas);
+
+            Sacado sacado = upsertSacado(item.sacado());
+            results.add(new ItemResult(item, res, sacado));
+
+            totalBruto = totalBruto.add(item.valor());
+            totalLiquido = totalLiquido.add(res.valorLiquido());
+            totalDesagio = totalDesagio.add(res.valorDesconto());
+            totalAdvalorem = totalAdvalorem.add(res.valorAdvalorem());
+            totalIof = totalIof.add(res.valorIofTotal());
+            totalTarifas = totalTarifas.add(res.valorTarifasCustomizadas().add(tarifaBoleto));
+        }
+
+        // --- Persist Bordero + Titulos when cedente is resolved ---
+        System.out.println("[BORDERO] Persistência: cedente=" + (cedente != null) + ", items=" + results.size());
+        if (cedente != null && !results.isEmpty()) {
+            String numeroBordero = "BDR-"
+                    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                    + "-" + String.valueOf(System.nanoTime()).substring(8);
+
+            Bordero bordero = new Bordero();
+            bordero.setNumeroBordero(numeroBordero);
+            bordero.setCedente(cedente);
+            bordero.setValorFaceTotal(totalBruto);
+            bordero.setDesagioTotal(totalDesagio);
+            bordero.setIofTotal(totalIof);
+            bordero.setTarifasTotal(totalTarifas);
+            bordero.setValorLiquidoTotal(totalLiquido);
+            borderoRepository.save(bordero);
+
+            for (ItemResult ir : results) {
+                Titulo titulo = new Titulo();
+                titulo.setNumeroDocumento(ir.item().numero());
+                titulo.setCedente(cedente);
+                titulo.setSacado(ir.sacado());
+                titulo.setBordero(bordero);
+                titulo.setValorFace(ir.item().valor());
+                titulo.setValorLiquidoAlocado(ir.calc().valorLiquido());
+                titulo.setDataEmissao(ir.item().dataEmissao() != null ? ir.item().dataEmissao() : LocalDate.now());
+                titulo.setDataVencimento(ir.item().vencimento());
+                titulo.setDataVencimentoAjustada(ir.calc().vencimentoAjustado());
+                tituloRepository.save(titulo);
+            }
+        }
+
+        // --- Generate and return PDF ---
+        return buildPdf(results, cnpjCedente, tarifaBoleto,
+                totalBruto, totalLiquido, totalDesagio, totalAdvalorem, totalIof, totalTarifas);
+    }
+
+    /**
+     * Upsert Sacado.
+     * The frontend may send either a 14-digit CNPJ or a free-text name from the
+     * XML.
+     * - If CNPJ: lookup by cnpjCpf, create if missing.
+     * - If name: lookup by razaoSocial, create with a provisional hash-CNPJ if
+     * missing.
+     */
+    private Sacado upsertSacado(String input) {
+        if (input == null || input.isBlank())
+            input = "SACADO_DESCONHECIDO";
+        final String value = input.trim();
+        final boolean isCnpj = value.matches("\\d{14}");
+
+        if (isCnpj) {
+            return sacadoRepository.findByCnpjCpf(value).orElseGet(() -> {
+                Sacado s = new Sacado();
+                s.setRazaoSocial("Sacado " + value); // placeholder name
+                s.setCnpjCpf(value);
+                s.setLimiteCredito(BigDecimal.ZERO);
+                return sacadoRepository.save(s);
+            });
+        } else {
+            return sacadoRepository.findByRazaoSocial(value).orElseGet(() -> {
+                String provisionalCnpj = String.format("%014d",
+                        Math.abs((long) value.hashCode()) % 100_000_000_000_000L);
+                return sacadoRepository.findByCnpjCpf(provisionalCnpj).orElseGet(() -> {
+                    Sacado s = new Sacado();
+                    s.setRazaoSocial(value);
+                    s.setCnpjCpf(provisionalCnpj);
+                    s.setLimiteCredito(BigDecimal.ZERO);
+                    return sacadoRepository.save(s);
+                });
+            });
+        }
+    }
+
+    // ---- PDF rendering -------------------------------------------------------
+
+    private byte[] buildPdf(List<ItemResult> results, String cnpjCedente, BigDecimal tarifaBoleto,
+            BigDecimal totalBruto, BigDecimal totalLiquido, BigDecimal totalDesagio,
+            BigDecimal totalAdvalorem, BigDecimal totalIof, BigDecimal totalTarifas) {
+
         Document document = new Document(PageSize.A4.rotate());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -40,129 +184,94 @@ public class BorderoService {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Font styles
             Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             Font subHeaderFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             Font tableHeaderFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
             Font tableBodyFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
 
-            // Title
             Paragraph title = new Paragraph("IA369 GFACTOR - BORDERÔ DE AQUISIÇÃO DE DIREITOS", headerFont);
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
             document.add(new Paragraph(" "));
 
-            if (items == null || items.isEmpty()) {
+            if (results.isEmpty()) {
                 document.add(new Paragraph("ERRO: Nenhum item recebido para processamento.", subHeaderFont));
                 document.close();
                 return out.toByteArray();
             }
 
-            // Header Info
             PdfPTable infoTable = new PdfPTable(2);
             infoTable.setWidthPercentage(100);
             infoTable.addCell(createNoBorderCell(
                     "Data da Operação: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                     subHeaderFont));
-            infoTable.addCell(
-                    createNoBorderCell("Cedente: " + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"),
-                            subHeaderFont));
+            infoTable.addCell(createNoBorderCell(
+                    "Cedente: " + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"), subHeaderFont));
             document.add(infoTable);
             document.add(new Paragraph(" "));
 
-            // Titles Table
             PdfPTable table = new PdfPTable(12);
             table.setWidthPercentage(100);
-            // Adjusted widths: Título(1f), Sacado(2.5f), Emissão(1.5f), Venc(1.5f),
-            // VencAdj(1.5f), Prazo(1f), V.Face(2.5f), Desagio(2f), Adval(2f), IOF(2f),
-            // Tarifas(2f), Líquido(2.5f)
-            float[] widths = { 1f, 2.5f, 1.5f, 1.5f, 1.5f, 1f, 2.5f, 2f, 2f, 2f, 2f, 2.5f };
-            table.setWidths(widths);
-
+            table.setWidths(new float[] { 1f, 2.5f, 1.5f, 1.5f, 1.5f, 1f, 2.5f, 2f, 2f, 2f, 2f, 2.5f });
             addTableHeader(table, tableHeaderFont);
 
-            BigDecimal totalBruto = BigDecimal.ZERO;
-            BigDecimal totalLiquido = BigDecimal.ZERO;
-            BigDecimal totalDesagio = BigDecimal.ZERO;
-            BigDecimal totalAdvalorem = BigDecimal.ZERO;
-            BigDecimal totalTarifas = BigDecimal.ZERO;
-            BigDecimal totalIof = BigDecimal.ZERO;
-
-            for (BorderoItemRequest item : items) {
-                PricingEngine.CalculationResult res = pricingEngine.calculate(
-                        item.valor(),
-                        item.vencimento(),
-                        LocalDate.now(),
-                        taxaMensal,
-                        advaloremPercent,
-                        tarifaBoleto,
-                        iofFixo,
-                        iofDiario,
-                        floatBancario,
-                        tarifasCustomizadas);
-
-                table.addCell(createCell(item.numero(), tableBodyFont));
-                table.addCell(createCell(item.sacado(), tableBodyFont));
+            for (ItemResult ir : results) {
+                table.addCell(createCell(ir.item().numero(), tableBodyFont));
+                table.addCell(createCell(ir.item().sacado(), tableBodyFont));
+                table.addCell(createCell(
+                        ir.item().dataEmissao() != null ? ir.item().dataEmissao().format(dtf) : "N/A", tableBodyFont));
+                table.addCell(createCell(ir.item().vencimento().format(dtf), tableBodyFont));
+                table.addCell(createCell(ir.calc().vencimentoAjustado().format(dtf), tableBodyFont));
+                table.addCell(createCell(String.valueOf(ir.calc().prazoEfetivo()), tableBodyFont));
+                table.addCell(createCell(formatMoney(ir.item().valor()), tableBodyFont));
+                table.addCell(createCell(formatMoney(ir.calc().valorDesconto()), tableBodyFont));
+                table.addCell(createCell(formatMoney(ir.calc().valorAdvalorem()), tableBodyFont));
+                table.addCell(createCell(formatMoney(ir.calc().valorIofTotal()), tableBodyFont));
                 table.addCell(
-                        createCell(item.dataEmissao() != null ? item.dataEmissao().format(dtf) : "N/A", tableBodyFont));
-                table.addCell(createCell(item.vencimento().format(dtf), tableBodyFont));
-                table.addCell(createCell(res.vencimentoAjustado().format(dtf), tableBodyFont));
-                table.addCell(createCell(String.valueOf(res.prazoEfetivo()), tableBodyFont));
-                table.addCell(createCell(formatMoney(item.valor()), tableBodyFont));
-                table.addCell(createCell(formatMoney(res.valorDesconto()), tableBodyFont));
-                table.addCell(createCell(formatMoney(res.valorAdvalorem()), tableBodyFont));
-                table.addCell(createCell(formatMoney(res.valorIofTotal()), tableBodyFont));
-                table.addCell(createCell(formatMoney(res.valorTarifasCustomizadas().add(tarifaBoleto)), tableBodyFont));
-                table.addCell(createCell(formatMoney(res.valorLiquido()), tableBodyFont));
-
-                totalBruto = totalBruto.add(item.valor());
-                totalLiquido = totalLiquido.add(res.valorLiquido());
-                totalDesagio = totalDesagio.add(res.valorDesconto());
-                totalAdvalorem = totalAdvalorem.add(res.valorAdvalorem());
-                totalIof = totalIof.add(res.valorIofTotal());
-                totalTarifas = totalTarifas.add(res.valorTarifasCustomizadas().add(tarifaBoleto));
+                        createCell(formatMoney(ir.calc().valorTarifasCustomizadas().add(tarifaBoleto)), tableBodyFont));
+                table.addCell(createCell(formatMoney(ir.calc().valorLiquido()), tableBodyFont));
             }
 
             document.add(table);
             document.add(new Paragraph(" "));
 
-            // Financial Summary
             PdfPTable summary = new PdfPTable(2);
             summary.setWidthPercentage(40);
             summary.setHorizontalAlignment(Element.ALIGN_RIGHT);
-
             addSummaryRow(summary, "Total Bruto:", formatMoney(totalBruto), subHeaderFont);
             addSummaryRow(summary, "Total Deságio:", formatMoney(totalDesagio), subHeaderFont);
             addSummaryRow(summary, "Total Advalorem:", formatMoney(totalAdvalorem), subHeaderFont);
             addSummaryRow(summary, "Total IOF:", formatMoney(totalIof), subHeaderFont);
             addSummaryRow(summary, "Total Tarifas:", formatMoney(totalTarifas), subHeaderFont);
             addSummaryRow(summary, "VALOR LÍQUIDO:", formatMoney(totalLiquido), headerFont);
-
             document.add(summary);
 
-            // Item 5: Legal Declarations
             document.add(new Paragraph(" "));
             Font declarationFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
-            String legalText = "O Cedente abaixo assinado declara expressamente, para todos os fins de direito, que os títulos descritos neste borderô são legítimos, originários de transações mercantis efetivas ou prestação de serviços reais, assumindo a responsabilidade civil e criminal por quaisquer irregularidades ou vícios ocultos. Cedemos e transferimos estes créditos, sem reservas, à IA369 GFACTOR.";
-            Paragraph declaration = new Paragraph(legalText, declarationFont);
+            Paragraph declaration = new Paragraph(
+                    "O Cedente abaixo assinado declara expressamente, para todos os fins de direito, que os títulos " +
+                            "descritos neste borderô são legítimos, originários de transações mercantis efetivas ou prestação "
+                            +
+                            "de serviços reais, assumindo a responsabilidade civil e criminal por quaisquer irregularidades ou "
+                            +
+                            "vícios ocultos. Cedemos e transferimos estes créditos, sem reservas, à IA369 GFACTOR.",
+                    declarationFont);
             declaration.setAlignment(Element.ALIGN_JUSTIFIED);
             document.add(declaration);
 
-            // Item 6: Signatures
             document.add(new Paragraph(" "));
             document.add(new Paragraph(" "));
             PdfPTable signatureTable = new PdfPTable(2);
             signatureTable.setWidthPercentage(100);
-
-            PdfPCell c1 = createNoBorderCell("_________________________________________\nCEDENTE (FATURIZADA)\n"
-                    + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"), subHeaderFont);
+            PdfPCell c1 = createNoBorderCell(
+                    "_________________________________________\nCEDENTE (FATURIZADA)\n"
+                            + (cnpjCedente != null ? formatCnpj(cnpjCedente) : "N/A"),
+                    subHeaderFont);
             c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-
             PdfPCell c2 = createNoBorderCell(
                     "_________________________________________\nCESSIONÁRIO (FATURIZADORA)\nIA369 GFACTOR",
                     subHeaderFont);
             c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-
             signatureTable.addCell(c1);
             signatureTable.addCell(c2);
             document.add(signatureTable);
@@ -176,9 +285,8 @@ public class BorderoService {
     }
 
     private void addTableHeader(PdfPTable table, Font font) {
-        String[] headers = { "Título", "Sacado", "Emissão", "Venc.", "Venc. Adj.", "Prazo", "V. Face", "Deságio",
-                "Adval.", "IOF", "Tarifas", "Líquido" };
-        for (String h : headers) {
+        for (String h : new String[] { "Título", "Sacado", "Emissão", "Venc.", "Venc. Adj.",
+                "Prazo", "V. Face", "Deságio", "Adval.", "IOF", "Tarifas", "Líquido" }) {
             PdfPCell cell = new PdfPCell(new Phrase(h, font));
             cell.setBackgroundColor(java.awt.Color.LIGHT_GRAY);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -208,18 +316,15 @@ public class BorderoService {
     private String formatMoney(BigDecimal val) {
         if (val == null)
             return "R$ 0,00";
-        java.text.NumberFormat nf = java.text.NumberFormat
-                .getCurrencyInstance(java.util.Locale.forLanguageTag("pt-BR"));
-        return nf.format(val);
+        return java.text.NumberFormat.getCurrencyInstance(java.util.Locale.forLanguageTag("pt-BR")).format(val);
     }
 
     private String formatCnpj(String cnpj) {
-        if (cnpj == null || cnpj.replaceAll("\\D", "").length() != 14) {
+        if (cnpj == null || cnpj.replaceAll("\\D", "").length() != 14)
             return cnpj;
-        }
-        String digits = cnpj.replaceAll("\\D", "");
-        return digits.substring(0, 2) + "." + digits.substring(2, 5) + "." + digits.substring(5, 8) + "/" +
-                digits.substring(8, 12) + "-" + digits.substring(12, 14);
+        String d = cnpj.replaceAll("\\D", "");
+        return d.substring(0, 2) + "." + d.substring(2, 5) + "." + d.substring(5, 8)
+                + "/" + d.substring(8, 12) + "-" + d.substring(12, 14);
     }
 
     public record BorderoItemRequest(
