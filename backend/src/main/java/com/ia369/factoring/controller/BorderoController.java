@@ -32,6 +32,7 @@ public class BorderoController {
                 request.iofFixo(),
                 request.iofDiario(),
                 request.floatBancario(),
+                request.contagemDiasUteis(),
                 request.tarifasCustomizadas());
 
         HttpHeaders headers = new HttpHeaders();
@@ -52,6 +53,7 @@ public class BorderoController {
             BigDecimal iofFixo,
             BigDecimal iofDiario,
             int floatBancario,
+            boolean contagemDiasUteis,
             List<TarifaCustomizada> tarifasCustomizadas) {
     }
 }

@@ -36,4 +36,8 @@ public class ParametrosTaxas {
 
     @Column(name = "float_bancario")
     private Integer floatBancario = 1;
+
+    // false = dias corridos (padrão histórico); true = dias úteis.
+    @Column(name = "contagem_dias_uteis")
+    private boolean contagemDiasUteis = false;
 }

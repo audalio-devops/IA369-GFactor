@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import SimuladorForm from './components/SimuladorForm';
-import XmlUploader from './components/XmlUploader';
+import GerarBordero from './components/GerarBordero';
 import Configuracoes from './components/Configuracoes';
 import Clientes from './components/Clientes';
 import { Bell, Clock, LayoutDashboard } from 'lucide-react';
+
+// Retorna a saudação de acordo com o período do dia (horário local do navegador):
+// 05h-11h59 = Bom dia, 12h-17h59 = Boa tarde, 18h-04h59 = Boa noite.
+const getSaudacao = () => {
+  const hora = new Date().getHours();
+  if (hora >= 5 && hora < 12) return 'Bom dia';
+  if (hora >= 12 && hora < 18) return 'Boa tarde';
+  return 'Boa noite';
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -39,7 +48,7 @@ function App() {
             <div className="animate-in fade-in slide-in-from-left-4 duration-500">
               <div className="mb-12">
                 <h2 className="text-5xl font-black font-mono tracking-tighter uppercase italic leading-none">
-                  Boa noite, Luiz
+                  {getSaudacao()}, Operador(a)
                 </h2>
                 <div className="h-2 w-32 bg-matrix-orange mt-4" />
               </div>
@@ -99,7 +108,7 @@ function App() {
           {/* 2. OPERAÇÕES VIEW */}
           {activeTab === 'operacoes' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <XmlUploader />
+              <GerarBordero />
             </div>
           )}
 

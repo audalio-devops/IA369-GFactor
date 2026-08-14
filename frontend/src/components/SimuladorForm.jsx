@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
 const SimuladorForm = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -17,6 +17,7 @@ const SimuladorForm = () => {
         iofFixo: 0.0038,
         iofDiario: 0.0000411,
         floatBancario: 1,
+        contagemDiasUteis: false,
         tarifasCustomizadas: []
     });
 
@@ -76,8 +77,14 @@ const SimuladorForm = () => {
                 const valorIofFixo = params.valorFace * params.iofFixo;
                 const valorIofDiario = params.valorFace * params.iofDiario * diffDays;
                 const valorIofTotal = valorIofFixo + valorIofDiario;
+                // Espelha o backend: soma bruta das tarifas customizadas só é segura
+                // aqui porque o simulador trata sempre UM único título (sem risco de
+                // duplicação entre títulos de um borderô). Ver PricingEngine/BorderoService.
+                const valorTarifasCustomizadas = (params.tarifasCustomizadas || [])
+                    .reduce((sum, t) => sum + (t.valor || 0), 0);
 
-                const valorLiquido = params.valorFace - valorDesconto - valorAdvalorem - valorIofTotal - params.tarifaBoleto;
+                const valorLiquido = params.valorFace - valorDesconto - valorAdvalorem - valorIofTotal
+                    - params.tarifaBoleto - valorTarifasCustomizadas;
                 const custoTotal = ((params.valorFace - valorLiquido) / params.valorFace) * 100;
 
                 setResults({
@@ -86,7 +93,7 @@ const SimuladorForm = () => {
                     valorIofFixo: valorIofFixo.toFixed(2),
                     valorIofDiario: valorIofDiario.toFixed(2),
                     valorIofTotal: valorIofTotal.toFixed(2),
-                    valorTarifasCustomizadas: 0,
+                    valorTarifasCustomizadas: valorTarifasCustomizadas.toFixed(2),
                     valorLiquido: valorLiquido.toFixed(2),
                     custoTotalPercent: custoTotal.toFixed(2),
                     prazoEfetivo: diffDays,
@@ -287,7 +294,7 @@ const SimuladorForm = () => {
                     )}
 
                     <div className="p-4 border-2 border-dashed border-matrix-orange opacity-50 font-mono text-[10px] uppercase">
-                        Cálculo considera Feriados de 2026 e RoundingMode.HALF_EVEN
+                        Cálculo considera Feriados de 2026 e RoundingMode.HALF_UP (arredondamento comercial)
                     </div>
                 </div>
             </div>

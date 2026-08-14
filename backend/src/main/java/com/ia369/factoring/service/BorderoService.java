@@ -11,11 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BorderoService {
@@ -52,6 +55,7 @@ public class BorderoService {
             BigDecimal iofFixo,
             BigDecimal iofDiario,
             int floatBancario,
+            boolean contagemDiasUteis,
             List<TarifaCustomizada> tarifasCustomizadas) {
 
         // --- Resolve cedente by CNPJ (digits only) ---
@@ -71,6 +75,41 @@ public class BorderoService {
         System.out.println("[BORDERO] Cedente resolvido: "
                 + (cedente != null ? cedente.getRazao_social() : "NULL (CNPJ em branco)"));
 
+        List<BorderoItemRequest> safeItems = items == null ? List.<BorderoItemRequest>of() : items;
+
+        // --- Rateio das tarifas customizadas por tipoCobranca ---
+        //
+        // BUG CORRIGIDO: o motor de cálculo aplicava a SOMA TOTAL das tarifas
+        // customizadas em CADA título do borderô, duplicando a tarifa N vezes
+        // (uma por título). A partir daqui, cada tarifa é alocada exatamente uma
+        // vez, de acordo com o seu escopo declarado (tipoCobranca):
+        // - TITULO: cobrada integralmente em CADA título (ex.: tarifa de protesto);
+        // - BORDERÔ: cobrada UMA ÚNICA VEZ no borderô, rateada entre os títulos
+        // proporcionalmente ao valor de face de cada um;
+        // - NOTA_FISCAL: cobrada UMA VEZ POR NOTA FISCAL (agrupada por chaveNfe),
+        // rateada entre os títulos daquela nota proporcionalmente ao valor de face.
+        BigDecimal tarifaPorTitulo = BigDecimal.ZERO;
+        BigDecimal tarifaPorBordero = BigDecimal.ZERO;
+        BigDecimal tarifaPorNota = BigDecimal.ZERO;
+        if (tarifasCustomizadas != null) {
+            for (TarifaCustomizada t : tarifasCustomizadas) {
+                switch (t.getTipoCobranca()) {
+                    case TITULO -> tarifaPorTitulo = tarifaPorTitulo.add(t.getValor());
+                    case BORDERÔ -> tarifaPorBordero = tarifaPorBordero.add(t.getValor());
+                    case NOTA_FISCAL -> tarifaPorNota = tarifaPorNota.add(t.getValor());
+                }
+            }
+        }
+
+        BigDecimal totalBrutoBordero = safeItems.stream()
+                .map(BorderoItemRequest::valor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, BigDecimal> totalBrutoPorNota = new HashMap<>();
+        for (BorderoItemRequest item : safeItems) {
+            String chave = notaKey(item);
+            totalBrutoPorNota.merge(chave, item.valor(), BigDecimal::add);
+        }
         // --- Compute pricing results and resolve/create sacados ---
         List<ItemResult> results = new ArrayList<>();
         BigDecimal totalBruto = BigDecimal.ZERO;
@@ -80,11 +119,17 @@ public class BorderoService {
         BigDecimal totalTarifas = BigDecimal.ZERO;
         BigDecimal totalIof = BigDecimal.ZERO;
 
-        for (BorderoItemRequest item : (items == null ? List.<BorderoItemRequest>of() : items)) {
+        for (BorderoItemRequest item : safeItems) {
+            BigDecimal shareBordero = ratearPorValorFace(tarifaPorBordero, item.valor(), totalBrutoBordero);
+            BigDecimal totalDaNota = totalBrutoPorNota.get(notaKey(item));
+            BigDecimal shareNota = ratearPorValorFace(tarifaPorNota, item.valor(), totalDaNota);
+            BigDecimal tarifaAlocada = tarifaPorTitulo.add(shareBordero).add(shareNota)
+                    .setScale(2, RoundingMode.HALF_UP);
+
             PricingEngine.CalculationResult res = pricingEngine.calculate(
                     item.valor(), item.vencimento(), LocalDate.now(),
                     taxaMensal, advaloremPercent, tarifaBoleto,
-                    iofFixo, iofDiario, floatBancario, tarifasCustomizadas);
+                    iofFixo, iofDiario, floatBancario, contagemDiasUteis, tarifaAlocada);
 
             Sacado sacado = upsertSacado(item.sacado());
             results.add(new ItemResult(item, res, sacado));
@@ -132,6 +177,37 @@ public class BorderoService {
         // --- Generate and return PDF ---
         return buildPdf(results, cnpjCedente, tarifaBoleto,
                 totalBruto, totalLiquido, totalDesagio, totalAdvalorem, totalIof, totalTarifas);
+    }
+
+    /**
+     * Chave de agrupamento para tarifas do tipo NOTA_FISCAL. Usa a chave de
+     * acesso da NF-e quando disponível; caso contrário, agrupa pelo par
+     * sacado+dataEmissao como aproximação (itens de uma mesma NF-e sem chave
+     * informada — ex.: entrada manual — compartilham esses dois campos).
+     *
+     * Nota: esta chave é usada apenas em memória para ratear a tarifa entre os
+     * títulos da mesma nota; não é persistida (ver Titulo.chaveNfe, que possui
+     * constraint UNIQUE por título e não pode ser reaproveitada aqui sem quebrar
+     * o cadastro de notas com múltiplas duplicatas — risco remanescente
+     * documentado na auditoria).
+     */
+    private String notaKey(BorderoItemRequest item) {
+        if (item.chaveNfe() != null && !item.chaveNfe().isBlank()) {
+            return "CHAVE:" + item.chaveNfe();
+        }
+        return "SACADO_EMISSAO:" + item.sacado() + "|" + item.dataEmissao();
+    }
+
+    /**
+     * Rateia {@code valorTotal} proporcionalmente à participação de
+     * {@code valorItem} sobre {@code baseTotal}. Retorna ZERO se a base for nula,
+     * zero ou o valor total a ratear for zero.
+     */
+    private BigDecimal ratearPorValorFace(BigDecimal valorTotal, BigDecimal valorItem, BigDecimal baseTotal) {
+        if (valorTotal == null || valorTotal.signum() == 0 || baseTotal == null || baseTotal.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+        return valorTotal.multiply(valorItem).divide(baseTotal, 10, RoundingMode.HALF_UP);
     }
 
     /**
@@ -332,6 +408,7 @@ public class BorderoService {
             String sacado,
             BigDecimal valor,
             LocalDate vencimento,
-            LocalDate dataEmissao) {
+            LocalDate dataEmissao,
+            String chaveNfe) {
     }
 }

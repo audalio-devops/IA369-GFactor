@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, Plus, Trash2, Settings as SettingsIcon, Info } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
 const Configuracoes = () => {
     const [taxas, setTaxas] = useState({
@@ -11,7 +11,8 @@ const Configuracoes = () => {
         tarifaBoleto: 0,
         iofFixo: 0,
         iofDiario: 0,
-        floatBancario: 2
+        floatBancario: 2,
+        contagemDiasUteis: false
     });
 
     const [tarifasCustom, setTarifasCustom] = useState([]);
@@ -139,7 +140,21 @@ const Configuracoes = () => {
                         <div className="flex flex-col">
                             <label className="text-[10px] uppercase font-bold opacity-50">Float Bancário (Dias)</label>
                             <input type="number" name="floatBancario" value={taxas.floatBancario} onChange={handleTaxaChange} className="brutalist-input text-matrix-green text-2xl" />
-                            <p className="text-[9px] opacity-40 mt-2 italic font-mono uppercase">Dias adicionais somados ao vencimento para cálculo de juros.</p>
+                            <p className="text-[9px] opacity-40 mt-2 italic font-mono uppercase">Dias adicionais somados ao vencimento (aplicados após o ajuste para o próximo dia útil), para cálculo de juros.</p>
+                        </div>
+
+                        <div className="flex flex-col mt-6">
+                            <label className="text-[10px] uppercase font-bold opacity-50">Contagem de Prazo</label>
+                            <select
+                                name="contagemDiasUteis"
+                                value={taxas.contagemDiasUteis ? 'uteis' : 'corridos'}
+                                onChange={e => setTaxas(prev => ({ ...prev, contagemDiasUteis: e.target.value === 'uteis' }))}
+                                className="brutalist-input text-matrix-green"
+                            >
+                                <option value="corridos">Dias Corridos</option>
+                                <option value="uteis">Dias Úteis</option>
+                            </select>
+                            <p className="text-[9px] opacity-40 mt-2 italic font-mono uppercase">Define se o prazo (deságio/IOF) é contado em dias corridos ou apenas dias úteis.</p>
                         </div>
                     </div>
                 </section>

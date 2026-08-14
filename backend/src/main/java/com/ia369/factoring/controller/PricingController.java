@@ -27,6 +27,7 @@ public class PricingController {
                 request.iofFixo(),
                 request.iofDiario(),
                 request.floatBancario(),
+                request.contagemDiasUteis(),
                 request.tarifasCustomizadas());
     }
 
@@ -40,6 +41,7 @@ public class PricingController {
             BigDecimal iofFixo,
             BigDecimal iofDiario,
             int floatBancario,
+            boolean contagemDiasUteis,
             java.util.List<com.ia369.factoring.model.TarifaCustomizada> tarifasCustomizadas) {
     }
 }
