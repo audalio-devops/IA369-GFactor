@@ -5,6 +5,7 @@ import Papa from 'papaparse';
 import {
     Upload, FileText, FileSpreadsheet, Keyboard, Trash2, X, Send, Download, AlertTriangle
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
@@ -118,6 +119,7 @@ const METHODS = [
 ];
 
 const GerarBordero = () => {
+    const { showToast } = useToast();
     const [method, setMethod] = useState('xml');
     const [items, setItems] = useState([]);
     const [cnpjCedente, setCnpjCedente] = useState('');
@@ -198,7 +200,7 @@ const GerarBordero = () => {
         const results = await Promise.all(filePromises);
         const flat = results.flat();
         if (flat.length === 0) {
-            alert('Nenhuma duplicata encontrada nos XML selecionados.');
+            showToast('Nenhuma duplicata encontrada nos XML selecionados.', 'warning');
             return;
         }
         setItems((prev) => [...prev, ...flat]);
@@ -224,13 +226,13 @@ const GerarBordero = () => {
             skipEmptyLines: true,
             complete: (results) => {
                 if (results.data.length === 0) {
-                    alert('Nenhuma linha encontrada no CSV.');
+                    showToast('Nenhuma linha encontrada no CSV.', 'warning');
                     return;
                 }
                 const newItems = results.data.map((row, idx) => mapRowToItem(row, `CSV: ${file.name}`, idx));
                 setItems((prev) => [...prev, ...newItems]);
             },
-            error: (err) => alert('Erro ao ler CSV: ' + err.message),
+            error: (err) => showToast('Erro ao ler CSV: ' + err.message, 'error'),
         });
     };
 
@@ -259,7 +261,7 @@ const GerarBordero = () => {
             await workbook.xlsx.load(buffer);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) {
-                alert('Nenhuma planilha encontrada no arquivo.');
+                showToast('Nenhuma planilha encontrada no arquivo.', 'warning');
                 return;
             }
 
@@ -286,14 +288,14 @@ const GerarBordero = () => {
             });
 
             if (rows.length === 0) {
-                alert('Nenhuma linha de dados encontrada na primeira planilha do arquivo.');
+                showToast('Nenhuma linha de dados encontrada na primeira planilha do arquivo.', 'warning');
                 return;
             }
             const newItems = rows.map((row, idx) => mapRowToItem(row, `Excel: ${file.name}`, idx));
             setItems((prev) => [...prev, ...newItems]);
         } catch (err) {
             console.error(err);
-            alert('Erro ao ler o arquivo Excel: ' + err.message);
+            showToast('Erro ao ler o arquivo Excel: ' + err.message, 'error');
         }
     };
 
@@ -301,7 +303,7 @@ const GerarBordero = () => {
     const addManualItem = () => {
         const valor = parseFlexibleValor(manualForm.valor);
         if (!manualForm.sacado || valor === null || valor <= 0 || !manualForm.vencimento) {
-            alert('Preencha ao menos Sacado, Valor e Vencimento corretamente.');
+            showToast('Preencha ao menos Sacado, Valor e Vencimento corretamente.', 'warning');
             return;
         }
         setItems((prev) => [...prev, {
@@ -328,11 +330,11 @@ const GerarBordero = () => {
     // ---- Gerar Borderô -------------------------------------------------------
     const handleGenerateBordero = async () => {
         if (!cnpjCedente) {
-            alert('Por favor, informe o CNPJ do Cliente (Cedente).');
+            showToast('Por favor, informe o CNPJ do Cliente (Cedente).', 'warning');
             return;
         }
         if (validItems.length === 0) {
-            alert('Adicione ao menos um item válido para gerar o borderô.');
+            showToast('Adicione ao menos um item válido para gerar o borderô.', 'warning');
             return;
         }
         if (isGenerating) return;
@@ -348,7 +350,7 @@ const GerarBordero = () => {
                 tarifasCustomizadas = customRes.data;
             } catch (err) {
                 console.error('Settings fetch failed', err);
-                alert('Erro ao buscar configurações das taxas. Verifique se o servidor backend está rodando.');
+                showToast('Erro ao buscar configurações das taxas. Verifique se o servidor backend está rodando.', 'error');
                 return;
             }
 
@@ -376,11 +378,11 @@ const GerarBordero = () => {
             link.click();
             link.remove();
 
-            alert('Borderô gerado com sucesso!');
+            showToast('Borderô gerado com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao gerar borderô', error);
             const msg = error.response ? `Erro do servidor: ${error.response.status}` : 'Erro ao conectar com o servidor. Verifique se o backend está ativo.';
-            alert(msg);
+            showToast(msg, 'error');
         } finally {
             setIsGenerating(false);
         }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Search, Edit2, Trash2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8369/api'}/cedentes`;
 
 const Clientes = () => {
+    const { showToast } = useToast();
     const [cedentes, setCedentes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -79,7 +81,7 @@ const Clientes = () => {
             });
             fetchCedentes();
         } catch (err) {
-            alert(err.message);
+            showToast(err.message, 'error');
         }
     };
 
@@ -109,7 +111,7 @@ const Clientes = () => {
             if (!res.ok) throw new Error('Erro ao desativar cliente');
             fetchCedentes();
         } catch (err) {
-            alert(err.message);
+            showToast(err.message, 'error');
         }
     };
 
