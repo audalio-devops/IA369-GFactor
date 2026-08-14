@@ -10,6 +10,42 @@ services:
       - "5369:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ia369_factoring"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: ia369_backend
+    environment:
+      # Overrides application.yml's localhost:5369 URL (Spring env vars win
+      # over yml values) so the backend talks to the db container over the
+      # internal docker network instead of the host-published port.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ia369_factoring
+      DB_POSTGRES_USER: ${DB_POSTGRES_USER}
+      DB_POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+    ports:
+      - "8369:8369"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    container_name: ia369_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:
