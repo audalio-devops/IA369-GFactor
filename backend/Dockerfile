@@ -12,7 +12,10 @@ COPY src ./src
 RUN mvn -B clean package -DskipTests
 
 # ---- Run stage ----
-FROM eclipse-temurin:17-jre-alpine
+# Debian-based (not -alpine): eclipse-temurin's alpine JRE tags are amd64-only,
+# which breaks on arm64 hosts (e.g. Oracle Ampere A1 OCI instances) with
+# "no match for platform in manifest". The debian-based tag is multi-arch.
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 

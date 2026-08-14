@@ -42,7 +42,10 @@ services:
         VITE_API_URL: /api
     container_name: ia369_frontend
     ports:
-      - "3000:80"
+      # Host 3000 is already taken by another app (qr369-frontend) on the
+      # shared OCI instance's default nginx vhost — 3369 keeps the project's
+      # own "369" port convention (5369 db, 8369 backend) and stays free.
+      - "3369:80"
     depends_on:
       - backend
     restart: unless-stopped
