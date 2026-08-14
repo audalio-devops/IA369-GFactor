@@ -6,7 +6,7 @@ import {
     Upload, FileText, FileSpreadsheet, Keyboard, Trash2, X, Send, Download, AlertTriangle
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
 // ---- Item id helper --------------------------------------------------------
 let idCounter = 0;
@@ -117,7 +117,7 @@ const METHODS = [
     { id: 'manual', label: 'Entrada Manual', icon: Keyboard },
 ];
 
-const NovaOperacao = () => {
+const GerarBordero = () => {
     const [method, setMethod] = useState('xml');
     const [items, setItems] = useState([]);
     const [cnpjCedente, setCnpjCedente] = useState('');
@@ -393,7 +393,7 @@ const NovaOperacao = () => {
                     <FileText className="w-10 h-10 text-matrix-orange" />
                     <div>
                         <h1 className="text-3xl font-black font-mono tracking-tighter uppercase italic">
-                            Nova Operação
+                            Gerar Borderô
                         </h1>
                         <p className="text-matrix-orange font-mono text-xs uppercase tracking-widest">
                             XML de NF-e / CSV / Excel / Entrada Manual — mesma lista, mesmo borderô
@@ -594,4 +594,4 @@ const NovaOperacao = () => {
     );
 };
 
-export default NovaOperacao;
+export default GerarBordero;

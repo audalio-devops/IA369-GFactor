@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import SimuladorForm from './components/SimuladorForm';
-import NovaOperacao from './components/NovaOperacao';
+import GerarBordero from './components/GerarBordero';
 import Configuracoes from './components/Configuracoes';
 import Clientes from './components/Clientes';
 import { Bell, Clock, LayoutDashboard } from 'lucide-react';
@@ -99,7 +99,7 @@ function App() {
           {/* 2. OPERAÇÕES VIEW */}
           {activeTab === 'operacoes' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <NovaOperacao />
+              <GerarBordero />
             </div>
           )}
 
