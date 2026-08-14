@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
 const SimuladorForm = () => {
     const today = new Date().toISOString().split('T')[0];

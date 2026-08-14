@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, Plus, Trash2, Settings as SettingsIcon, Info } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8369/api';
 
 const Configuracoes = () => {
     const [taxas, setTaxas] = useState({

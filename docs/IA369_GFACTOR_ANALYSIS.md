@@ -374,7 +374,7 @@ Para executar o sistema em ambiente de desenvolvimento local, utilize os passos 
    # Na pasta raiz "c:\Projetos\IA369-GFactor"
    .\start-db-wsl.bat
    ```
-   *(Este script viaja até a sua área de trabalho do WSL Bash, mapeia a porta 5432:5432 e ativa o container do banco de dados `ia369_db` persistindo os dados em volumes do Docker)*.
+   *(Este script viaja até a sua área de trabalho do WSL Bash, mapeia a porta 5369:5432 (host:container — porta externa não-padrão para evitar conflito com outro Postgres já instalado no servidor) e ativa o container do banco de dados `ia369_db` persistindo os dados em volumes do Docker)*.
 
 ### 6.3. Inicialização do Backend
 
@@ -388,7 +388,7 @@ O backend realiza a reparação do banco e migra o histórico de migrações SQL
    ```powershell
    mvn spring-boot:run
    ```
-3. O console listará a criação automática de tabelas (Flyway) e exibirá a mensagem de que o servidor Spring Boot está escutando na porta **8080** (`http://localhost:8090`).
+3. O console listará a criação automática de tabelas (Flyway) e exibirá a mensagem de que o servidor Spring Boot está escutando na porta **8369** (`http://localhost:8369`) — porta não-padrão, escolhida para evitar conflito com outra aplicação já instalada no servidor.
 
 ### 6.4. Inicialização do Frontend
 
@@ -406,7 +406,7 @@ O frontend se baseia em Vite para carregamento ultra-rápido de módulos JavaScr
    ```powershell
    npm run dev
    ```
-4. O servidor iniciará na porta padrão **5173** (acesse via `http://localhost:5173`). O painel brutalista exibirá o simulador conectado ao backend localizado na porta `http://localhost:8090/api`.
+4. O servidor iniciará na porta configurada em `vite.config.js` (acesse via `http://localhost:3000`). O painel brutalista exibirá o simulador conectado ao backend localizado na porta `http://localhost:8369/api`.
 
 ---
 *Análise elaborada para IA369 GFACTOR Command Center // Terminal ID: 1029.*

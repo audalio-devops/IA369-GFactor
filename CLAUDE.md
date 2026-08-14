@@ -11,10 +11,11 @@ IA369 GFactor is a factoring (recebíveis/duplicatas) back-office system: a Spri
 ### Database (Postgres via Docker/WSL2 — see `Infos.txt`)
 - Root `.env` (gitignored) holds `DB_POSTGRES_USER`, `DB_POSTGRES_PASSWORD`, `VITE_API_URL`.
 - Start: `.\start-db-wsl.bat` (runs `docker compose up -d` inside the WSL2 Ubuntu distro). Docker isn't reachable directly from a Windows/Git-Bash shell — prefix commands with `wsl`, e.g. `wsl docker ps`, `wsl docker exec ia369_db psql -U <user> -d ia369_factoring`.
+- Host-facing port is **5369** (`docker-compose.yml` maps `5369:5432` — non-default, chosen to avoid clashing with another app's Postgres on the deployment server; the container still listens on 5432 internally). `application.yml`'s datasource URL must match: `jdbc:postgresql://localhost:5369/ia369_factoring`.
 
 ### Backend (`backend/`, Java 17, Maven, Spring Boot 3.2.5)
 - `FactoringApplication.main()` hand-rolls a dotenv loader that reads `.env`, falling back to `../.env` — so running `mvn spring-boot:run` from `backend/` picks up the root `.env` automatically; no need to export `DB_POSTGRES_USER`/`DB_POSTGRES_PASSWORD` by hand as long as the working directory is `backend/`.
-- Run dev server (port 8090): `mvn spring-boot:run`
+- Run dev server (port **8369**, non-default — same reason as the DB port above): `mvn spring-boot:run`
 - Compile: `mvn compile`
 - All tests: `mvn test`
 - Single test class: `mvn test -Dtest=PricingEngineTest`
@@ -24,7 +25,7 @@ IA369 GFactor is a factoring (recebíveis/duplicatas) back-office system: a Spri
 ### Frontend (`frontend/`, React 18 + Vite + Tailwind)
 - `npm install`, `npm run dev` (port 3000), `npm run build`, `npm run preview`.
 - No lint or test script is configured.
-- Talks to the backend at `VITE_API_URL` (default `http://localhost:8090/api`); `vite.config.js` sets `envDir: '../'` so it also reads the root `.env`.
+- Talks to the backend at `VITE_API_URL` (default `http://localhost:8369/api`); `vite.config.js` sets `envDir: '../'` so it also reads the root `.env`.
 
 ## Architecture
 
@@ -49,9 +50,9 @@ Other rules baked into `PricingEngine`/`CalendarService`, don't casually change 
 `ConfiguracoesController` persists a single `ParametrosTaxas` row (`cedenteId` hardcoded to `"DEFAULT"`) and a flat list of `TarifaCustomizada`. `EmpresaCedente.taxaPadraoDesagio` exists on the client record but the pricing flow does not read it — rates come from the global `ParametrosTaxas`/simulate-request payload, not from the cedente being operated on.
 
 ### Frontend has no router and no component library
-`App.jsx` is a single page that swaps between feature screens (`SimuladorForm`, `XmlUploader`, `Configuracoes`, `Clientes`) via local `useState`, driven by `Sidebar`. Each file under `frontend/src/components/` is a full feature screen with its own `axios`/`fetch` calls inlined — there's no reusable UI kit, just a thin Tailwind layer (the `matrix-*` color palette in `tailwind.config.js` plus `.brutalist-card`/`.brutalist-input`/`.brutalist-button` utility classes in `index.css`).
+`App.jsx` is a single page that swaps between feature screens (`SimuladorForm`, `GerarBordero`, `Configuracoes`, `Clientes`) via local `useState`, driven by `Sidebar`. Each file under `frontend/src/components/` is a full feature screen with its own `axios`/`fetch` calls inlined — there's no reusable UI kit, just a thin Tailwind layer (the `matrix-*` color palette in `tailwind.config.js` plus `.brutalist-card`/`.brutalist-input`/`.brutalist-button` utility classes in `index.css`).
 
-`XmlUploader` parses NF-e XML client-side (browser `DOMParser`) to pull out duplicatas, then POSTs the items plus the current settings to `/api/bordero/generate`, which returns the borderô PDF and persists `Bordero` + `Titulo` rows in the same call.
+`GerarBordero` (the "Operações" tab) unifies all input methods from `docs/SistemaFactoring.pdf`'s ESCOPO DO SISTEMA that are currently implemented — XML de NF-e (parsed client-side via `DOMParser`), CSV (`papaparse`), Excel (`exceljs`) and manual entry — into one flat item list with a shared "Processar e Gerar o Borderô" action. Items from different sources can be mixed in the same borderô. PDF/JPG/PNG (vision-AI extraction) are not implemented yet. POSTs the items plus the current settings to `/api/bordero/generate`, which returns the borderô PDF and persists `Bordero` + `Titulo` rows in the same call.
 
 ### Known rough edges
 - `Titulo.chaveNfe` has a `UNIQUE` DB constraint, but one NF-e can produce multiple duplicatas/títulos sharing the same chave. `BorderoService` deliberately does **not** persist `chaveNfe` on `Titulo` (it would violate the constraint); it only uses it in memory to group `NOTA_FISCAL`-scoped tarifas.
