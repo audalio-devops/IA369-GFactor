@@ -77,15 +77,15 @@ const Configuracoes = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <header className="border-b-4 border-matrix-orange pb-4">
-                <h1 className="text-4xl font-black font-mono tracking-tighter uppercase italic">
+            <header className="border-b border-wine/10 pb-4">
+                <h1 className="text-4xl font-black font-mono tracking-tighter uppercase italic text-wine">
                     Configurações do Sistema
                 </h1>
-                <p className="text-matrix-orange font-mono text-sm uppercase">Painel de Controle Financeiro</p>
+                <p className="text-wine/60 font-mono text-sm uppercase">Painel de Controle Financeiro</p>
             </header>
 
             {message && (
-                <div className={`p-4 font-bold uppercase text-xs ${message.type === 'success' ? 'bg-matrix-green text-black' : 'bg-red-500 text-white'}`}>
+                <div className={`p-4 font-bold uppercase text-xs rounded-xl border ${message.type === 'success' ? 'bg-wine text-gold border-gold/20' : 'bg-red-500/15 text-red-300 border-red-500/20'}`}>
                     {message.text}
                 </div>
             )}
@@ -93,31 +93,31 @@ const Configuracoes = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* GRUPO: TARIFAS PADRÃO */}
                 <section className="space-y-6">
-                    <div className="brutalist-card">
-                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2">
-                            <SettingsIcon className="w-5 h-5 text-matrix-orange" />
+                    <div className="brutalist-card bg-wine text-branco">
+                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2 text-branco">
+                            <SettingsIcon className="w-5 h-5 text-gold" />
                             Tarifas Padrão (Imutáveis)
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex flex-col">
-                                <label className="text-[10px] uppercase font-bold opacity-50">Taxa Mensal (%)</label>
+                                <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">Taxa Mensal (%)</label>
                                 <input type="number" name="taxaMensal" value={taxas.taxaMensal} onChange={handleTaxaChange} className="brutalist-input" />
                             </div>
                             <div className="flex flex-col">
-                                <label className="text-[10px] uppercase font-bold opacity-50">Advalorem (%)</label>
+                                <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">Advalorem (%)</label>
                                 <input type="number" name="advaloremPercent" value={taxas.advaloremPercent} onChange={handleTaxaChange} className="brutalist-input" />
                             </div>
                             <div className="flex flex-col">
-                                <label className="text-[10px] uppercase font-bold opacity-50">Tarifa Boleto (R$)</label>
+                                <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">Tarifa Boleto (R$)</label>
                                 <input type="number" name="tarifaBoleto" value={taxas.tarifaBoleto} onChange={handleTaxaChange} className="brutalist-input" />
                             </div>
                             <div className="flex flex-col">
-                                <label className="text-[10px] uppercase font-bold opacity-50">IOF Fixo (%)</label>
+                                <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">IOF Fixo (%)</label>
                                 <input type="number" name="iofFixo" value={taxas.iofFixo} step="0.0001" onChange={handleTaxaChange} className="brutalist-input" />
                             </div>
                             <div className="flex flex-col md:col-span-2">
-                                <label className="text-[10px] uppercase font-bold opacity-50">IOF Diário (%)</label>
+                                <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">IOF Diário (%)</label>
                                 <input type="number" name="iofDiario" value={taxas.iofDiario} step="0.0000001" onChange={handleTaxaChange} className="brutalist-input" />
                             </div>
                         </div>
@@ -132,38 +132,38 @@ const Configuracoes = () => {
                         </button>
                     </div>
 
-                    <div className="brutalist-card border-matrix-green/30 shadow-[4px_4px_0px_0px_rgba(0,255,65,0.3)]">
-                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2 text-matrix-green">
+                    <div className="brutalist-card bg-wine text-branco border-white/10 shadow-[0_8px_30px_rgba(74,16,13,0.15)]">
+                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2 text-gold">
                             <Info className="w-5 h-5" />
                             Configurações Gerais
                         </h2>
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50">Float Bancário (Dias)</label>
-                            <input type="number" name="floatBancario" value={taxas.floatBancario} onChange={handleTaxaChange} className="brutalist-input text-matrix-green text-2xl" />
-                            <p className="text-[9px] opacity-40 mt-2 italic font-mono uppercase">Dias adicionais somados ao vencimento (aplicados após o ajuste para o próximo dia útil), para cálculo de juros.</p>
+                            <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">Float Bancário (Dias)</label>
+                            <input type="number" name="floatBancario" value={taxas.floatBancario} onChange={handleTaxaChange} className="brutalist-input text-gold text-2xl font-bold" />
+                            <p className="text-[9px] opacity-55 mt-2 italic font-mono uppercase text-branco">Dias adicionais somados ao vencimento (aplicados após o ajuste para o próximo dia útil), para cálculo de juros.</p>
                         </div>
 
                         <div className="flex flex-col mt-6">
-                            <label className="text-[10px] uppercase font-bold opacity-50">Contagem de Prazo</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 text-branco mb-1">Contagem de Prazo</label>
                             <select
                                 name="contagemDiasUteis"
                                 value={taxas.contagemDiasUteis ? 'uteis' : 'corridos'}
                                 onChange={e => setTaxas(prev => ({ ...prev, contagemDiasUteis: e.target.value === 'uteis' }))}
-                                className="brutalist-input text-matrix-green"
+                                className="brutalist-input text-gold font-bold"
                             >
-                                <option value="corridos">Dias Corridos</option>
-                                <option value="uteis">Dias Úteis</option>
+                                <option value="corridos" className="bg-wine text-branco">Dias Corridos</option>
+                                <option value="uteis" className="bg-wine text-branco">Dias Úteis</option>
                             </select>
-                            <p className="text-[9px] opacity-40 mt-2 italic font-mono uppercase">Define se o prazo (deságio/IOF) é contado em dias corridos ou apenas dias úteis.</p>
+                            <p className="text-[9px] opacity-55 mt-2 italic font-mono uppercase text-branco">Define se o prazo (deságio/IOF) é contado em dias corridos ou apenas dias úteis.</p>
                         </div>
                     </div>
                 </section>
 
                 {/* GRUPO: TARIFAS DINÂMICAS */}
                 <section className="space-y-6">
-                    <div className="brutalist-card">
-                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2">
-                            <Plus className="w-5 h-5 text-matrix-orange" />
+                    <div className="brutalist-card bg-wine text-branco">
+                        <h2 className="text-xl font-black uppercase mb-6 flex items-center gap-2 text-branco">
+                            <Plus className="w-5 h-5 text-gold" />
                             Tarifas Customizadas
                         </h2>
 
@@ -188,12 +188,12 @@ const Configuracoes = () => {
                                         value={newTarifa.tipoCobranca}
                                         onChange={e => setNewTarifa({ ...newTarifa, tipoCobranca: e.target.value })}
                                     >
-                                        <option value="BORDERÔ">Por Borderô</option>
-                                        <option value="NOTA_FISCAL">Por Nota Fiscal</option>
-                                        <option value="TITULO">Por Título</option>
+                                        <option value="BORDERÔ" className="bg-wine text-branco">Por Borderô</option>
+                                        <option value="NOTA_FISCAL" className="bg-wine text-branco">Por Nota Fiscal</option>
+                                        <option value="TITULO" className="bg-wine text-branco">Por Título</option>
                                     </select>
                                 </div>
-                                <button onClick={addTarifaCustom} className="brutalist-button bg-white text-black hover:bg-matrix-orange transition-colors uppercase font-black text-xs py-3">
+                                <button onClick={addTarifaCustom} className="brutalist-button bg-white text-wine hover:bg-white/95 transition-all w-full uppercase font-black text-xs py-3 rounded-xl">
                                     Adicionar Nova Tarifa
                                 </button>
                             </div>
@@ -201,21 +201,21 @@ const Configuracoes = () => {
 
                         <div className="space-y-2">
                             {tarifasCustom.map(tarifa => (
-                                <div key={tarifa.id} className="flex justify-between items-center bg-matrix-black p-3 border border-white/5 group hover:border-matrix-orange transition-all">
+                                <div key={tarifa.id} className="flex justify-between items-center bg-wine/30 p-3 rounded-xl border border-white/10 group hover:border-gold transition-all text-branco">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase text-matrix-orange">{tarifa.nome}</span>
-                                        <span className="text-[9px] opacity-40 font-mono italic uppercase">{tarifa.tipoCobranca}</span>
+                                        <span className="text-[10px] font-black uppercase text-gold">{tarifa.nome}</span>
+                                        <span className="text-[9px] opacity-50 font-mono italic uppercase text-branco">{tarifa.tipoCobranca}</span>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <span className="font-mono font-bold text-white">R$ {tarifa.valor.toFixed(2)}</span>
-                                        <button onClick={() => deleteTarifaCustom(tarifa.id)} className="text-white/20 hover:text-red-500 transition-colors">
+                                        <span className="font-mono font-bold text-branco">R$ {tarifa.valor.toFixed(2)}</span>
+                                        <button onClick={() => deleteTarifaCustom(tarifa.id)} className="text-branco/30 hover:text-red-400 transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
                             ))}
                             {tarifasCustom.length === 0 && (
-                                <div className="text-center py-8 border-2 border-dashed border-white/5 opacity-20 uppercase font-black text-xs">
+                                <div className="text-center py-8 border border-dashed border-white/20 opacity-30 uppercase font-black text-xs text-branco rounded-xl">
                                     Nenhuma tarifa adicional cadastrada
                                 </div>
                             )}

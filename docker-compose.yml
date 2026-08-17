@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ia369_factoring"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ia369_factoring" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -40,6 +40,8 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: /api
+        VITE_LOGIN_USR: ${VITE_LOGIN_USR}
+        VITE_LOGIN_PWD: ${VITE_LOGIN_PWD}
     container_name: ia369_frontend
     ports:
       # Host 3000 is already taken by another app (qr369-frontend) on the

@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        gold: 'var(--color-dourado-joalheria)',
+        wine: 'var(--color-cafe-vinho)',
+        branco: 'var(--color-branco)',
         matrix: {
-          black: '#0A0A0A',
-          gray: '#1A1A1A',
-          orange: '#FF5F1F', // Signal Orange
-          green: '#00FF41', // Matrix Green
+          black: 'var(--color-cafe-vinho)', // fallback mapping
+          gray: 'var(--color-cafe-vinho)',  // fallback mapping
+          orange: 'var(--color-dourado-joalheria)', // fallback mapping
+          green: 'var(--color-branco)', // fallback mapping
         },
-      },
-      borderRadius: {
-        none: '0',
       },
       fontFamily: {
         brutalist: ['Inter', 'sans-serif'],

@@ -3,36 +3,45 @@
 @tailwind utilities;
 
 :root {
-  background-color: #0A0A0A;
-  color: #FFFFFF;
+  --color-dourado-joalheria: #E2BD72;
+  --color-cafe-vinho: #5C1229;
+  --color-branco: #ffffff;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
+  background-color: var(--color-dourado-joalheria);
+  color: var(--color-cafe-vinho);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Brutalist Scrollbar */
+/* Premium Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #1A1A1A;
+  background: var(--color-cafe-vinho);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #FF5F1F;
+  background: var(--color-dourado-joalheria);
+  border-radius: 5px;
 }
 
 .brutalist-card {
-  @apply bg-matrix-gray border border-matrix-orange p-6 shadow-[4px_4px_0px_0px_rgba(255,95,31,1)];
+  box-shadow: 0 8px 30px rgba(74, 16, 13, 0.15);
+  @apply bg-wine text-branco border border-white/10 p-6 rounded-2xl transition-all duration-300;
 }
 
 .brutalist-input {
-  @apply bg-matrix-black border border-white p-2 focus:border-matrix-orange focus:outline-none font-mono transition-colors;
+  background-color: rgba(74, 16, 13, 0.3);
+  @apply border border-white/20 text-branco p-3 rounded-xl focus:border-white focus:outline-none transition-colors;
 }
 
 .brutalist-button {
-  @apply bg-matrix-orange text-black font-bold py-2 px-4 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all;
+  box-shadow: 0 4px 12px rgba(74, 16, 13, 0.20);
+  @apply bg-white text-wine font-bold py-3 px-6 hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] rounded-xl transition-all;
 }

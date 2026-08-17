@@ -15,10 +15,10 @@ const ICONS = {
 };
 
 const ACCENTS = {
-    success: 'border-matrix-green text-matrix-green shadow-[4px_4px_0px_0px_rgba(0,255,65,1)]',
-    error: 'border-red-500 text-red-500 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]',
-    warning: 'border-matrix-orange text-matrix-orange shadow-[4px_4px_0px_0px_rgba(255,95,31,1)]',
-    info: 'border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]',
+    success: 'border-matrix-green text-matrix-green',
+    error: 'border-red-500 text-red-500',
+    warning: 'border-matrix-orange text-matrix-orange',
+    info: 'border-white text-white',
 };
 
 let idCounter = 0;
@@ -51,7 +51,7 @@ export function ToastProvider({ children }) {
                         <div
                             key={t.id}
                             role="alert"
-                            className={`pointer-events-auto bg-matrix-gray border-2 p-4 flex items-start gap-3 font-mono animate-in slide-in-from-right-8 fade-in duration-300 ${ACCENTS[t.type] || ACCENTS.info}`}
+                            className={`pointer-events-auto bg-matrix-gray border-2 p-4 flex items-start gap-3 font-mono animate-in slide-in-from-right-8 fade-in duration-300 rounded-xl ${ACCENTS[t.type] || ACCENTS.info}`}
                         >
                             <Icon className="w-5 h-5 shrink-0 mt-0.5" />
                             <p className="text-xs text-white flex-1 leading-relaxed break-words">{t.message}</p>

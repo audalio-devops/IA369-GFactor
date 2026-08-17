@@ -12,6 +12,14 @@ COPY . .
 # container, so the bundle never needs to know the host's public IP/domain.
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
+
+# Login credentials — inlined at build time by Vite (import.meta.env.*)
+# Must be passed as build args in docker-compose.yml or via --build-arg
+ARG VITE_LOGIN_USR
+ARG VITE_LOGIN_PWD
+ENV VITE_LOGIN_USR=$VITE_LOGIN_USR
+ENV VITE_LOGIN_PWD=$VITE_LOGIN_PWD
+
 RUN npm run build
 
 # ---- Serve stage ----

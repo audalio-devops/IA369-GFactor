@@ -390,14 +390,14 @@ const GerarBordero = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <header className="border-b-4 border-matrix-orange pb-4">
+            <header className="border-b border-wine/10 pb-4">
                 <div className="flex items-center gap-3">
-                    <FileText className="w-10 h-10 text-matrix-orange" />
+                    <FileText className="w-10 h-10 text-wine" />
                     <div>
-                        <h1 className="text-3xl font-black font-mono tracking-tighter uppercase italic">
+                        <h1 className="text-3xl font-black font-mono tracking-tighter uppercase italic text-wine">
                             Gerar Borderô
                         </h1>
-                        <p className="text-matrix-orange font-mono text-xs uppercase tracking-widest">
+                        <p className="text-wine/60 font-mono text-xs uppercase tracking-widest">
                             XML de NF-e / CSV / Excel / Entrada Manual — mesma lista, mesmo borderô
                         </p>
                     </div>
@@ -405,8 +405,8 @@ const GerarBordero = () => {
             </header>
 
             {/* CNPJ INPUT */}
-            <div className="bg-matrix-gray/40 p-6 border-l-8 border-matrix-orange">
-                <label className="block text-xs font-mono uppercase opacity-70 mb-2">
+            <div className="bg-wine p-6 rounded-2xl border border-wine/15 text-branco shadow-[0_8px_30px_rgba(74,16,13,0.15)]">
+                <label className="block text-xs font-mono uppercase opacity-75 mb-2 text-branco">
                     CNPJ do Cliente (Cedente) *
                 </label>
                 <input
@@ -414,7 +414,7 @@ const GerarBordero = () => {
                     value={cnpjCedente}
                     onChange={(e) => setCnpjCedente(e.target.value)}
                     placeholder="Exemplo: 12345678000195"
-                    className="w-full bg-matrix-black border-2 border-white/10 p-3 font-mono text-xl focus:border-matrix-orange outline-none transition-colors"
+                    className="w-full bg-wine/30 border border-white/20 p-3 rounded-xl font-mono text-xl focus:border-white outline-none transition-colors text-gold font-bold"
                 />
             </div>
 
@@ -424,9 +424,9 @@ const GerarBordero = () => {
                     <button
                         key={m.id}
                         onClick={() => setMethod(m.id)}
-                        className={`flex items-center gap-2 px-5 py-3 text-xs uppercase font-bold tracking-widest transition-all border-2 ${method === m.id
-                            ? 'bg-matrix-orange text-black border-matrix-orange'
-                            : 'border-white/10 text-white/60 hover:text-white hover:border-white/30'
+                        className={`flex items-center gap-2 px-5 py-3 text-xs uppercase font-bold tracking-widest transition-all border rounded-xl ${method === m.id
+                            ? 'bg-wine text-branco border-wine shadow-[0_4px_12px_rgba(74,16,13,0.15)]'
+                            : 'border-wine/20 text-wine hover:bg-wine/5'
                             }`}
                     >
                         <m.icon className="w-4 h-4" />
@@ -442,74 +442,74 @@ const GerarBordero = () => {
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleXmlDrop}
                     onClick={() => xmlInputRef.current.click()}
-                    className={`border-4 border-dashed p-10 transition-all flex flex-col items-center justify-center space-y-4 cursor-pointer ${isDragging ? 'border-matrix-orange bg-matrix-orange/10 scale-[0.99]' : 'border-white/20 bg-matrix-gray/30'
+                    className={`border border-dashed p-10 rounded-2xl transition-all flex flex-col items-center justify-center space-y-4 cursor-pointer ${isDragging ? 'border-wine bg-wine/10 scale-[0.99]' : 'border-wine/20 bg-wine/5'
                         }`}
                 >
                     <input type="file" ref={xmlInputRef} className="hidden" accept=".xml" multiple onChange={handleXmlSelect} />
-                    <Upload className={`w-12 h-12 ${isDragging ? 'text-matrix-orange' : 'text-white/20'}`} />
-                    <div className="text-center">
+                    <Upload className={`w-12 h-12 ${isDragging ? 'text-wine' : 'text-wine/40'}`} />
+                    <div className="text-center text-wine">
                         <p className="text-lg font-bold uppercase tracking-tight">Clique aqui ou arraste os arquivos XML</p>
-                        <p className="text-[10px] font-mono opacity-50 uppercase mt-1">Suporte para múltiplos arquivos simultaneamente</p>
+                        <p className="text-[10px] font-mono opacity-60 uppercase mt-1">Suporte para múltiplos arquivos simultaneamente</p>
                     </div>
                 </div>
             )}
 
             {method === 'csv' && (
-                <div className="border-4 border-dashed border-white/20 bg-matrix-gray/30 p-10 flex flex-col items-center justify-center space-y-4">
+                <div className="border border-dashed border-wine/20 bg-wine/5 p-10 rounded-2xl flex flex-col items-center justify-center space-y-4">
                     <input type="file" ref={csvInputRef} className="hidden" accept=".csv" onChange={handleCsvSelect} />
-                    <FileSpreadsheet className="w-12 h-12 text-white/20" />
+                    <FileSpreadsheet className="w-12 h-12 text-wine/40" />
                     <div className="flex gap-4">
                         <button onClick={() => csvInputRef.current.click()} className="brutalist-button px-6 py-3">
                             Selecionar arquivo CSV
                         </button>
-                        <button onClick={downloadCsvTemplate} className="px-6 py-3 border-2 border-white/20 text-xs font-mono uppercase hover:bg-white/5 transition-colors flex items-center gap-2">
+                        <button onClick={downloadCsvTemplate} className="px-6 py-3 border border-wine/25 text-xs font-mono uppercase hover:bg-wine/10 text-wine rounded-xl transition-colors flex items-center gap-2">
                             <Download className="w-4 h-4" /> Baixar modelo
                         </button>
                     </div>
-                    <p className="text-[10px] font-mono opacity-50 uppercase text-center">
+                    <p className="text-[10px] font-mono opacity-60 uppercase text-center text-wine">
                         Colunas esperadas: numero, sacado, valor, dataEmissao, vencimento
                     </p>
                 </div>
             )}
 
             {method === 'excel' && (
-                <div className="border-4 border-dashed border-white/20 bg-matrix-gray/30 p-10 flex flex-col items-center justify-center space-y-4">
+                <div className="border border-dashed border-wine/20 bg-wine/5 p-10 rounded-2xl flex flex-col items-center justify-center space-y-4">
                     <input type="file" ref={excelInputRef} className="hidden" accept=".xlsx,.xls" onChange={handleExcelSelect} />
-                    <FileSpreadsheet className="w-12 h-12 text-white/20" />
+                    <FileSpreadsheet className="w-12 h-12 text-wine/40" />
                     <button onClick={() => excelInputRef.current.click()} className="brutalist-button px-6 py-3">
                         Selecionar arquivo Excel
                     </button>
-                    <p className="text-[10px] font-mono opacity-50 uppercase text-center">
+                    <p className="text-[10px] font-mono opacity-60 uppercase text-center text-wine">
                         Usa a primeira planilha do arquivo. Colunas esperadas: numero, sacado, valor, dataEmissao, vencimento
                     </p>
                 </div>
             )}
 
             {method === 'manual' && (
-                <div className="border-2 border-white/10 bg-matrix-gray/30 p-6 space-y-4">
+                <div className="border border-wine/10 bg-wine p-6 rounded-2xl text-branco shadow-[0_8px_30px_rgba(74,16,13,0.15)] space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50 mb-1">Número</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 mb-1">Número</label>
                             <input type="text" className="brutalist-input" value={manualForm.numero}
                                 onChange={(e) => setManualForm({ ...manualForm, numero: e.target.value })} />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50 mb-1">Sacado (CNPJ ou nome) *</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 mb-1">Sacado (CNPJ ou nome) *</label>
                             <input type="text" className="brutalist-input" value={manualForm.sacado}
                                 onChange={(e) => setManualForm({ ...manualForm, sacado: e.target.value })} />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50 mb-1">Valor (R$) *</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 mb-1">Valor (R$) *</label>
                             <input type="number" step="0.01" className="brutalist-input" value={manualForm.valor}
                                 onChange={(e) => setManualForm({ ...manualForm, valor: e.target.value })} />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50 mb-1">Emissão</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 mb-1">Emissão</label>
                             <input type="date" className="brutalist-input" value={manualForm.dataEmissao}
                                 onChange={(e) => setManualForm({ ...manualForm, dataEmissao: e.target.value })} />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-[10px] uppercase font-bold opacity-50 mb-1">Vencimento *</label>
+                            <label className="text-[10px] uppercase font-bold opacity-60 mb-1">Vencimento *</label>
                             <input type="date" className="brutalist-input" value={manualForm.vencimento}
                                 onChange={(e) => setManualForm({ ...manualForm, vencimento: e.target.value })} />
                         </div>
@@ -523,44 +523,44 @@ const GerarBordero = () => {
             {/* ITEMS TABLE (comum a todos os métodos) */}
             {items.length > 0 && (
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-matrix-orange font-mono text-sm uppercase font-bold px-1">
-                        <FileText className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-wine font-mono text-sm uppercase font-bold px-1">
+                        <FileText className="w-4 h-4 text-wine" />
                         <span>Itens ({items.length}) — {validItems.length} válidos, {items.length - validItems.length} com erro</span>
                     </div>
 
-                    <div className="brutalist-card bg-matrix-gray/40 overflow-hidden">
-                        <div className="overflow-x-auto">
+                    <div className="brutalist-card bg-wine overflow-hidden shadow-[0_8px_30px_rgba(74,16,13,0.15)] p-0">
+                        <div className="overflow-x-auto p-6">
                             <table className="w-full text-left border-collapse text-xs font-mono">
                                 <thead>
-                                    <tr className="border-b border-white/5 uppercase font-black opacity-50 tracking-widest">
-                                        <th className="p-3">Origem</th>
-                                        <th className="p-3">Título</th>
-                                        <th className="p-3">Sacado</th>
-                                        <th className="p-3">Emissão</th>
-                                        <th className="p-3">Vencimento</th>
-                                        <th className="p-3 text-right">Valor</th>
-                                        <th className="p-3">Status</th>
-                                        <th className="p-3 text-right">Ação</th>
+                                    <tr className="border-b border-white/10 uppercase font-black opacity-60 tracking-widest text-branco">
+                                        <th className="pb-3 pr-3">Origem</th>
+                                        <th className="pb-3 px-3">Título</th>
+                                        <th className="pb-3 px-3">Sacado</th>
+                                        <th className="pb-3 px-3">Emissão</th>
+                                        <th className="pb-3 px-3">Vencimento</th>
+                                        <th className="pb-3 px-3 text-right">Valor</th>
+                                        <th className="pb-3 px-3">Status</th>
+                                        <th className="pb-3 pl-3 text-right">Ação</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="text-branco/90">
                                     {items.map((item) => (
-                                        <tr key={item.id} className={`border-b border-white/5 ${item.erro ? 'bg-red-500/5' : ''}`}>
-                                            <td className="p-3 opacity-60">{item.origem}</td>
-                                            <td className="p-3">{item.numero}</td>
-                                            <td className="p-3 truncate max-w-[200px]">{item.sacado}</td>
-                                            <td className="p-3">{formatDate(item.dataEmissao)}</td>
-                                            <td className="p-3">{formatDate(item.vencimento)}</td>
-                                            <td className="p-3 text-right font-black">{item.valor != null ? `R$ ${formatCurrency(item.valor)}` : '--'}</td>
-                                            <td className="p-3">
+                                        <tr key={item.id} className={`border-b border-white/10 last:border-none ${item.erro ? 'bg-red-500/10' : ''}`}>
+                                            <td className="py-3 pr-3 opacity-60 truncate max-w-[120px]">{item.origem}</td>
+                                            <td className="py-3 px-3">{item.numero}</td>
+                                            <td className="py-3 px-3 truncate max-w-[200px]">{item.sacado}</td>
+                                            <td className="py-3 px-3">{formatDate(item.dataEmissao)}</td>
+                                            <td className="py-3 px-3">{formatDate(item.vencimento)}</td>
+                                            <td className="py-3 px-3 text-right font-black text-gold">{item.valor != null ? `R$ ${formatCurrency(item.valor)}` : '--'}</td>
+                                            <td className="py-3 px-3">
                                                 {item.erro ? (
-                                                    <span className="flex items-center gap-1 text-red-400"><AlertTriangle className="w-3 h-3" /> {item.erro}</span>
+                                                    <span className="flex items-center gap-1 text-red-300 font-bold"><AlertTriangle className="w-3 h-3" /> {item.erro}</span>
                                                 ) : (
-                                                    <span className="text-matrix-green">OK</span>
+                                                    <span className="text-gold font-bold">OK</span>
                                                 )}
                                             </td>
-                                            <td className="p-3 text-right">
-                                                <button onClick={() => removeItem(item.id)} className="text-white/20 hover:text-red-500 transition-colors">
+                                            <td className="py-3 pl-3 text-right">
+                                                <button onClick={() => removeItem(item.id)} className="text-branco/30 hover:text-red-400 transition-colors">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -571,13 +571,13 @@ const GerarBordero = () => {
                         </div>
                     </div>
 
-                    <div className="pt-6 flex flex-wrap gap-4 justify-between items-center bg-matrix-gray/20 p-6 border-t-2 border-white/5">
+                    <div className="pt-6 flex flex-wrap gap-4 justify-between items-center bg-wine p-6 rounded-2xl border border-wine/10 text-branco shadow-[0_8px_30px_rgba(74,16,13,0.15)]">
                         <div className="flex items-center gap-6">
-                            <button onClick={clearAll} className="px-6 py-3 border-2 border-white/20 text-xs font-mono uppercase hover:bg-white/5 transition-colors flex items-center gap-2">
+                            <button onClick={clearAll} className="px-6 py-3 border border-white/20 text-xs font-mono uppercase hover:bg-white/5 transition-colors rounded-xl flex items-center gap-2 text-branco">
                                 <X className="w-4 h-4" /> Limpar tudo
                             </button>
-                            <div className="text-xs font-mono uppercase opacity-70">
-                                Total válido: <span className="text-matrix-green font-black">R$ {formatCurrency(totalValor)}</span>
+                            <div className="text-xs font-mono uppercase opacity-80 text-branco">
+                                Total válido: <span className="text-gold font-black">R$ {formatCurrency(totalValor)}</span>
                             </div>
                         </div>
 

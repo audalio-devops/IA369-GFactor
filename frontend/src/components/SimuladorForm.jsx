@@ -118,11 +118,11 @@ const SimuladorForm = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <header className="border-b-4 border-matrix-orange pb-4">
-                <h1 className="text-4xl font-black font-mono tracking-tighter uppercase italic">
+            <header className="border-b border-wine/10 pb-4">
+                <h1 className="text-4xl font-black font-mono tracking-tighter uppercase italic text-wine">
                     Simulação de Operação
                 </h1>
-                <p className="text-matrix-orange font-mono text-sm uppercase">Engine de Cálculo V1.2 // FISCAL_ENABLED</p>
+                <p className="text-wine/60 font-mono text-sm uppercase">Engine de Cálculo V1.2 // FISCAL_ENABLED</p>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -130,17 +130,17 @@ const SimuladorForm = () => {
                 <div className="brutalist-card space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col md:col-span-2">
-                            <label className="text-xs uppercase font-bold mb-1">Valor de Face (R$)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Valor de Face (R$)</label>
                             <input
                                 type="number"
                                 name="valorFace"
                                 value={params.valorFace}
                                 onChange={handleChange}
-                                className="brutalist-input text-2xl font-black text-matrix-orange"
+                                className="brutalist-input text-2xl font-black text-gold"
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Data Operação</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Data Operação</label>
                             <input
                                 type="date"
                                 name="dataOperacao"
@@ -150,7 +150,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Data Vencimento</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Data Vencimento</label>
                             <input
                                 type="date"
                                 name="dataVencimento"
@@ -160,7 +160,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Taxa Mensal (%)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Taxa Mensal (%)</label>
                             <input
                                 type="number"
                                 name="taxaMensal"
@@ -171,7 +171,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Advalorem (%)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Advalorem (%)</label>
                             <input
                                 type="number"
                                 name="advaloremPercent"
@@ -182,7 +182,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Tarifa Boleto (R$)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Tarifa Boleto (R$)</label>
                             <input
                                 type="number"
                                 name="tarifaBoleto"
@@ -192,7 +192,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">Float (Dias)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">Float (Dias)</label>
                             <input
                                 type="number"
                                 name="floatBancario"
@@ -202,7 +202,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">IOF Fixo (%)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">IOF Fixo (%)</label>
                             <input
                                 type="number"
                                 name="iofFixo"
@@ -213,7 +213,7 @@ const SimuladorForm = () => {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <label className="text-xs uppercase font-bold mb-1">IOF Diário (%)</label>
+                            <label className="text-xs uppercase font-bold mb-1 text-branco/80">IOF Diário (%)</label>
                             <input
                                 type="number"
                                 name="iofDiario"
@@ -228,14 +228,14 @@ const SimuladorForm = () => {
 
                 {/* OUTPUT SECTION */}
                 <div className="space-y-4">
-                    <div className="p-6 border border-white bg-matrix-orange shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:scale-[1.01] transition-transform duration-200">
-                        <span className="text-xs uppercase font-black text-black block mb-1">
+                    <div className="p-6 bg-wine border border-white/10 rounded-2xl shadow-[0_8px_30px_rgba(74,16,13,0.15)] hover:scale-[1.01] transition-transform duration-200">
+                        <span className="text-xs uppercase font-black text-branco/60 block mb-1">
                             Valor Líquido a Receber
                         </span>
-                        <div className="text-5xl font-black font-mono text-black">
+                        <div className="text-5xl font-black font-mono text-gold">
                             R$ {Number(results.valorLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
-                        <div className="mt-2 flex justify-between text-[10px] font-mono text-black uppercase font-bold">
+                        <div className="mt-2 flex justify-between text-[10px] font-mono text-branco/85 uppercase font-bold">
                             <span>Prazo Efetivo: {results.prazoEfetivo} dias</span>
                             <span>Venc: {results.vencimentoAjustado ? results.vencimentoAjustado.split('-').reverse().join('/') : '--/--/----'}</span>
                         </div>
@@ -244,20 +244,20 @@ const SimuladorForm = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="brutalist-card">
                             <span className="text-xs uppercase font-bold opacity-70">Deságio (Juros)</span>
-                            <div className="text-2xl font-mono text-matrix-orange">
+                            <div className="text-2xl font-mono text-gold">
                                 R$ {Number(results.valorDesconto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </div>
                             <div className="text-[9px] opacity-40 font-mono italic">Inclui {params.floatBancario} dias de float</div>
                         </div>
                         <div className="brutalist-card">
                             <span className="text-xs uppercase font-bold opacity-70">Desconto Advalorem</span>
-                            <div className="text-2xl font-mono text-white">
+                            <div className="text-2xl font-mono text-branco">
                                 R$ {Number(results.valorAdvalorem).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </div>
                         </div>
                         <div className="brutalist-card">
                             <span className="text-xs uppercase font-bold opacity-70">IOF Total</span>
-                            <div className="text-2xl font-mono text-matrix-green">
+                            <div className="text-2xl font-mono text-gold">
                                 R$ {Number(results.valorIofTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </div>
                             <div className="text-[9px] opacity-40 font-mono">
@@ -266,7 +266,7 @@ const SimuladorForm = () => {
                         </div>
                         <div className="brutalist-card">
                             <span className="text-xs uppercase font-bold opacity-70">Taxas Extras</span>
-                            <div className="text-2xl font-mono text-white">
+                            <div className="text-2xl font-mono text-branco">
                                 R$ {Number(results.valorTarifasCustomizadas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </div>
                             <div className="text-[9px] opacity-40 font-mono">
@@ -275,25 +275,25 @@ const SimuladorForm = () => {
                         </div>
                         <div className="brutalist-card">
                             <span className="text-xs uppercase font-bold opacity-70">Custo Efetivo</span>
-                            <div className="text-2xl font-mono text-white">
+                            <div className="text-2xl font-mono text-branco">
                                 {results.custoTotalPercent}%
                             </div>
                         </div>
                     </div>
 
                     {params.tarifasCustomizadas?.length > 0 && (
-                        <div className="bg-matrix-black/50 border border-white/5 p-3 space-y-1">
-                            <p className="text-[9px] font-black uppercase opacity-30 mb-2">Detalhamento de Tarifas</p>
+                        <div className="bg-wine/40 border border-white/5 p-4 rounded-xl space-y-1">
+                            <p className="text-[9px] font-black uppercase opacity-45 mb-2 text-branco">Detalhamento de Tarifas</p>
                             {params.tarifasCustomizadas.map((t, i) => (
-                                <div key={i} className="flex justify-between text-[10px] font-mono">
-                                    <span className="opacity-60">{t.nome} ({t.tipoCobranca})</span>
-                                    <span className="text-matrix-orange">R$ {t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                <div key={i} className="flex justify-between text-[10px] font-mono text-branco">
+                                    <span className="opacity-70">{t.nome} ({t.tipoCobranca})</span>
+                                    <span className="text-gold font-bold">R$ {t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    <div className="p-4 border-2 border-dashed border-matrix-orange opacity-50 font-mono text-[10px] uppercase">
+                    <div className="p-4 border border-dashed border-wine/30 rounded-xl opacity-60 font-mono text-[10px] uppercase text-wine">
                         Cálculo considera Feriados de 2026 e RoundingMode.HALF_UP (arredondamento comercial)
                     </div>
                 </div>
