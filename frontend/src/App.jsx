@@ -32,7 +32,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gold text-wine selection:bg-wine selection:text-branco flex font-brutalist">
+    <div className="min-h-screen bg-[#F8F4EE] text-wine selection:bg-wine selection:text-branco flex font-brutalist">
       {/* SIDEBAR NAVIGATION */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
@@ -40,7 +40,7 @@ function App() {
       <div className="flex-1 ml-64 min-h-screen flex flex-col relative z-10">
         {/* TECHNICAL GRID BACKGROUND OVERLAY */}
         <div className="fixed inset-0 opacity-[0.05] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(#4a100d 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+          style={{ backgroundImage: 'radial-gradient(rgba(92,18,41,0.12) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
         </div>
 
         {/* TOP BAR / HEADER */}

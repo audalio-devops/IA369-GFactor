@@ -7,15 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: 'var(--color-dourado-joalheria)',
-        wine: 'var(--color-cafe-vinho)',
-        branco: 'var(--color-branco)',
-        matrix: {
-          black: 'var(--color-cafe-vinho)', // fallback mapping
-          gray: 'var(--color-cafe-vinho)',  // fallback mapping
-          orange: 'var(--color-dourado-joalheria)', // fallback mapping
-          green: 'var(--color-branco)', // fallback mapping
-        },
+        // Paleta principal — IA369 GFactor
+        gold: 'var(--color-dourado-joalheria)', // #C8991A — labels, destaques, logo
+        wine: 'var(--color-cafe-vinho)',        // #5C1229 — sidebar, botões, fundo
+        branco: 'var(--color-branco)',            // #FFFFFF — texto, cards
+        cream: 'var(--color-input-bg)',          // #F5EFE6 — fundo dos inputs
       },
       fontFamily: {
         brutalist: ['Inter', 'sans-serif'],

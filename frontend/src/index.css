@@ -2,24 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS — IA369 GFactor Color System
+   Paleta derivada de TelaLogin.jpg
+   ──────────────────────────────────────────── */
 :root {
-  --color-dourado-joalheria: #E2BD72;
+  /* Cores primárias */
+  --color-dourado-joalheria: #C8991A;
+  /* Dourado: labels, destaque, logo "369" */
   --color-cafe-vinho: #5C1229;
-  --color-branco: #ffffff;
+  /* Café com Vinho: sidebar, botão, fundo */
+  --color-branco: #FFFFFF;
+  /* Branco: cards, texto em fundo escuro */
+
+  /* Derivadas para uso interno */
+  --color-input-bg: #F5EFE6;
+  /* Fundo dos inputs (creme suave)         */
+  --color-input-text: #333333;
+  /* Texto dentro dos inputs                */
+  --color-sidebar-bg: #4A0D20;
+  /* Sidebar: vinho mais escuro             */
+  --color-body-bg: #5C1229;
+  /* Background global quando não usa gold   */
 }
 
+/* ─────────────────────────────────────────────
+   BASE
+   ──────────────────────────────────────────── */
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background-color: var(--color-dourado-joalheria);
-  color: var(--color-cafe-vinho);
+  background-color: var(--color-cafe-vinho);
+  color: var(--color-branco);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Premium Scrollbar */
+/* ─────────────────────────────────────────────
+   SCROLLBAR PREMIUM
+   ──────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,20 +51,92 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-dourado-joalheria);
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
+/* ─────────────────────────────────────────────
+   COMPONENTES GLOBAIS
+   Usados em toda a aplicação via className="..."
+   ──────────────────────────────────────────── */
+
+/* Card de seção — fundo vinho, texto branco */
 .brutalist-card {
-  box-shadow: 0 8px 30px rgba(74, 16, 13, 0.15);
-  @apply bg-wine text-branco border border-white/10 p-6 rounded-2xl transition-all duration-300;
+  background-color: var(--color-cafe-vinho);
+  color: var(--color-branco);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(74, 13, 32, 0.25);
+  transition: all 0.3s ease;
 }
 
+/* Input de formulário — creme / fundo suave */
 .brutalist-input {
-  background-color: rgba(74, 16, 13, 0.3);
-  @apply border border-white/20 text-branco p-3 rounded-xl focus:border-white focus:outline-none transition-colors;
+  background-color: var(--color-input-bg);
+  color: var(--color-input-text);
+  border: 1.5px solid transparent;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
 }
 
+.brutalist-input:focus {
+  border-color: var(--color-dourado-joalheria);
+  box-shadow: 0 0 0 3px rgba(200, 153, 26, 0.15);
+}
+
+.brutalist-input::placeholder {
+  color: #aaa;
+}
+
+/* Select herda aparência do input */
+select.brutalist-input {
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Botão primário — vinho com texto branco */
 .brutalist-button {
-  box-shadow: 0 4px 12px rgba(74, 16, 13, 0.20);
-  @apply bg-white text-wine font-bold py-3 px-6 hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] rounded-xl transition-all;
+  background-color: var(--color-cafe-vinho);
+  color: var(--color-branco);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.625rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(92, 18, 41, 0.35);
+  transition: all 0.2s ease;
+}
+
+.brutalist-button:hover {
+  background-color: #6e1530;
+  transform: scale(1.02);
+}
+
+.brutalist-button:active {
+  transform: scale(0.98);
+}
+
+.brutalist-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Label uppercase dourado — padrão para formulários */
+.field-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-dourado-joalheria);
+  margin-bottom: 0.5rem;
 }
